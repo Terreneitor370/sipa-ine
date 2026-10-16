@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Entidad, FeatureCollectionGeo, RiesgoRespuesta } from "../types/api";
+import type { Entidad, FeatureCollectionGeo, RiesgoRespuesta, SeccionFicha } from "../types/api";
 import * as api from "../api/recursos";
 
 export function useRiesgo(filtros: {
@@ -37,5 +37,14 @@ export function useGeo(entidad: string) {
     queryKey: ["geo", entidad],
     queryFn: () => api.obtenerGeo(entidad),
     staleTime: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+export function useSeccion(id: string) {
+  return useQuery<SeccionFicha>({
+    queryKey: ["seccion", id],
+    queryFn: () => api.obtenerSeccion(id),
+    enabled: Boolean(id),
+    staleTime: 5 * 60 * 1000,
   });
 }

@@ -1,0 +1,35 @@
+{
+  "seccionId": 1234,
+  "claveSeccion": "1234",
+  "nombre": "Sección 1234",
+  "municipio": "Hermosillo",
+  "distrito": 4,
+  "entidad": "Sonora",
+  "modeloVersion": "1.2.0",
+  "predicciones": {
+    "p10": 0.497,
+    "media": 0.543,
+    "p90": 0.589,
+    "amplitudPp": 9.2
+  },
+  "indicadores": {
+    "listaNominal": 12450,
+    "electoresPorCasilla": 692,
+    "distMacKm": 3.2,
+    "marginacion": "Media (estrato 3)",
+    "pctInternet": 0.498
+  },
+  "historico": [
+    { "anio": 2018, "tipo": "presidencial", "abstencion": 0.535 },
+    { "anio": 2021, "tipo": "intermedia", "abstencion": 0.571 },
+    { "anio": 2024, "tipo": "presidencial", "abstencion": 0.498 },
+    { "anio": 2027, "tipo": "intermedia", "abstencion": 0.543, "proyectado": true }
+  ],
+  "factoresTop": [
+    { "variable": "abst_lag_mismo_tipo", "descripcion": "Abstención intermedia previa", "contribucion": 0.042 },
+    { "variable": "dist_mac_km", "descripcion": "Distancia a MAC más cercano", "contribucion": 0.031 },
+    { "variable": "ind_marginacion", "descripcion": "Índice de marginación (CONAPO)", "contribucion": 0.023 },
+    { "variable": "pct_viv_internet", "descripcion": "Viviendas con internet", "contribucion": 0.014 },
+    { "variable": "escolaridad_prom", "descripcion": "Escolaridad promedio", "contribucion": -0.009 }
+  ]
+}

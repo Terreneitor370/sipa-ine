@@ -1,9 +1,10 @@
-import type { Entidad, FeatureCollectionGeo, RiesgoRespuesta } from "../types/api";
+import type { Entidad, FeatureCollectionGeo, RiesgoRespuesta, SeccionFicha } from "../types/api";
 import { USAR_MOCKS, http } from "./client";
 
 import riesgoMock from "../mocks/riesgo.json";
 import catalogosMock from "../mocks/catalogos.json";
 import geoMock from "../mocks/geo-sonora.json";
+import seccionMock from "../mocks/seccion-1234.json";
 
 const espera = (ms = 250) => new Promise((r) => setTimeout(r, ms));
 
@@ -45,5 +46,14 @@ export async function obtenerGeo(entidad: string): Promise<FeatureCollectionGeo>
     return geoMock as FeatureCollectionGeo;
   }
   const { data } = await http.get<FeatureCollectionGeo>(`/geo/${entidad}`);
+  return data;
+}
+
+export async function obtenerSeccion(id: string): Promise<SeccionFicha> {
+  if (USAR_MOCKS) {
+    await espera();
+    return { ...(seccionMock as unknown as SeccionFicha), claveSeccion: id };
+  }
+  const { data } = await http.get<SeccionFicha>(`/secciones/${id}`);
   return data;
 }
