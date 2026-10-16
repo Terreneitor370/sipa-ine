@@ -1,0 +1,126 @@
+{
+  "escenarioId": 12,
+  "total": 50,
+  "filas": [
+    {
+      "seccionId": 418,
+      "claveSeccion": "0418",
+      "municipio": "Navojoa",
+      "listaNominal": 9685,
+      "abstencionA": 0.4,
+      "deltaPp": -3.8,
+      "votosRecuperables": 677,
+      "nivel": "BAJO"
+    },
+    {
+      "seccionId": 440,
+      "claveSeccion": "0440",
+      "municipio": "Navojoa",
+      "listaNominal": 9079,
+      "abstencionA": 0.425,
+      "deltaPp": -2.0,
+      "votosRecuperables": 726,
+      "nivel": "BAJO"
+    },
+    {
+      "seccionId": 443,
+      "claveSeccion": "0443",
+      "municipio": "Obregón",
+      "listaNominal": 9730,
+      "abstencionA": 0.558,
+      "deltaPp": -2.3,
+      "votosRecuperables": 389,
+      "nivel": "ALTO"
+    },
+    {
+      "seccionId": 426,
+      "claveSeccion": "0426",
+      "municipio": "Guaymas",
+      "listaNominal": 8328,
+      "abstencionA": 0.589,
+      "deltaPp": -4.6,
+      "votosRecuperables": 666,
+      "nivel": "MUY_ALTO"
+    },
+    {
+      "seccionId": 444,
+      "claveSeccion": "0444",
+      "municipio": "Etchojoa",
+      "listaNominal": 7919,
+      "abstencionA": 0.58,
+      "deltaPp": -2.4,
+      "votosRecuperables": 395,
+      "nivel": "MUY_ALTO"
+    },
+    {
+      "seccionId": 433,
+      "claveSeccion": "0433",
+      "municipio": "Etchojoa",
+      "listaNominal": 7116,
+      "abstencionA": 0.4,
+      "deltaPp": -5.3,
+      "votosRecuperables": 569,
+      "nivel": "BAJO"
+    },
+    {
+      "seccionId": 419,
+      "claveSeccion": "0419",
+      "municipio": "Agua Prieta",
+      "listaNominal": 7101,
+      "abstencionA": 0.4,
+      "deltaPp": -3.9,
+      "votosRecuperables": 568,
+      "nivel": "BAJO"
+    },
+    {
+      "seccionId": 445,
+      "claveSeccion": "0445",
+      "municipio": "Hermosillo",
+      "listaNominal": 7443,
+      "abstencionA": 0.624,
+      "deltaPp": -2.5,
+      "votosRecuperables": 446,
+      "nivel": "MUY_ALTO"
+    },
+    {
+      "seccionId": 441,
+      "claveSeccion": "0441",
+      "municipio": "Agua Prieta",
+      "listaNominal": 8417,
+      "abstencionA": 0.487,
+      "deltaPp": -2.1,
+      "votosRecuperables": 168,
+      "nivel": "MEDIO"
+    },
+    {
+      "seccionId": 408,
+      "claveSeccion": "0408",
+      "municipio": "Agua Prieta",
+      "listaNominal": 7773,
+      "abstencionA": 0.567,
+      "deltaPp": -2.8,
+      "votosRecuperables": 310,
+      "nivel": "MUY_ALTO"
+    },
+    {
+      "seccionId": 437,
+      "claveSeccion": "0437",
+      "municipio": "Guaymas",
+      "listaNominal": 7472,
+      "abstencionA": 0.4,
+      "deltaPp": -5.7,
+      "votosRecuperables": 373,
+      "nivel": "BAJO"
+    },
+    {
+      "seccionId": 412,
+      "claveSeccion": "0412",
+      "municipio": "Hermosillo",
+      "listaNominal": 6474,
+      "abstencionA": 0.4,
+      "deltaPp": -3.2,
+      "votosRecuperables": 517,
+      "nivel": "BAJO"
+    }
+  ]
+}

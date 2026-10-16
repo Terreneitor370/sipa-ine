@@ -1,9 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { IconoMapa, IconoSimulador } from "../ui/Icons";
+import { IconoLibro, IconoLista, IconoMapa, IconoSimulador } from "../ui/Icons";
 
 const MODULOS = [
   { a: "/", texto: "Mapa de Riesgo", Icono: IconoMapa },
   { a: "/simulador", texto: "Simulador", Icono: IconoSimulador },
+  { a: "/priorizacion", texto: "Priorización", Icono: IconoLista },
+  { a: "/modelo", texto: "Modelo", Icono: IconoLibro },
 ];
 
 export function Sidebar() {

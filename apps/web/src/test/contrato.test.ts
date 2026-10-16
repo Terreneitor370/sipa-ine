@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type {
   FeatureCollectionGeo,
+  ModeloInfo,
+  PriorizacionRespuesta,
   RiesgoRespuesta,
   SeccionFicha,
   SimulacionResumen,
@@ -9,6 +11,8 @@ import riesgo from "../mocks/riesgo.json";
 import geo from "../mocks/geo-sonora.json";
 import seccionJson from "../mocks/seccion-1234.json";
 import simulacionJson from "../mocks/simulacion.json";
+import priorizacionJson from "../mocks/priorizacion.json";
+import modeloJson from "../mocks/modelo.json";
 
 /**
  * Consistencia de los mocks con el contrato congelado (16 de octubre).
@@ -18,6 +22,8 @@ describe("mocks del contrato de API", () => {
   const r = riesgo as unknown as RiesgoRespuesta;
   const seccion = seccionJson as unknown as SeccionFicha;
   const sim = simulacionJson as unknown as SimulacionResumen;
+  const priorizacion = priorizacionJson as unknown as PriorizacionRespuesta;
+  const modelo = modeloJson as unknown as ModeloInfo;
 
   it("cada sección del riesgo tiene geometría y clave única", () => {
     const claves = r.secciones.map((s) => s.claveSeccion);
@@ -74,5 +80,22 @@ describe("mocks del contrato de API", () => {
     expect(sim.resumen.abstencionPromedio.B).toBeLessThanOrEqual(
       sim.resumen.abstencionPromedio.A,
     );
+  });
+
+  it("la priorización reduce la abstención y conserva votos recuperables no negativos", () => {
+    for (const f of priorizacion.filas) {
+      expect(f.abstencionA).toBeGreaterThanOrEqual(0);
+      expect(f.abstencionA).toBeLessThanOrEqual(1);
+      expect(f.deltaPp).toBeLessThanOrEqual(0);
+      expect(f.votosRecuperables).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it("el model card reporta tres métricas y ocho variables de importancia", () => {
+    expect(modelo.metricas.length).toBe(3);
+    expect(modelo.importanciaVariables.length).toBe(8);
+    for (const m of modelo.importanciaVariables) {
+      expect(m.gain).toBeGreaterThan(0);
+    }
   });
 });

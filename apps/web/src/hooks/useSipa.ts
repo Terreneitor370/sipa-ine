@@ -2,6 +2,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   Entidad,
   FeatureCollectionGeo,
+  ModeloInfo,
+  PriorizacionRespuesta,
   RiesgoRespuesta,
   SeccionFicha,
   SimulacionRequest,
@@ -58,5 +60,21 @@ export function useSeccion(id: string) {
 export function useSimulacion() {
   return useMutation({
     mutationFn: (req: SimulacionRequest) => api.crearSimulacion(req),
+  });
+}
+
+export function usePriorizacion(escenarioId: number) {
+  return useQuery<PriorizacionRespuesta>({
+    queryKey: ["priorizacion", escenarioId],
+    queryFn: () => api.obtenerPriorizacion(escenarioId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useModelo() {
+  return useQuery<ModeloInfo>({
+    queryKey: ["modelo"],
+    queryFn: api.obtenerModelo,
+    staleTime: 60 * 60 * 1000,
   });
 }
