@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-fondo text-[13px] leading-[18px] text-ink antialiased;
+  font-family: "IBM Plex Sans", system-ui, Segoe UI, Roboto, sans-serif;
+}
+
+.leaflet-container {
+  @apply h-full w-full;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+/* Controles de zoom cuadrados, sin sombra (sistema de diseño govtech) */
+.leaflet-touch .leaflet-bar,
+.leaflet-bar {
+  border: 1px solid #d1d5db;
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+.leaflet-bar a {
+  border-radius: 0;
+  background: #ffffff;
+  color: #111827;
+}
+
+.leaflet-tooltip {
+  border-radius: 2px;
+  border: 1px solid #d1d5db;
+  background: #fff9f0;
+  color: #111827;
+  box-shadow: none;
+}

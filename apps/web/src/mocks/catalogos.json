@@ -1,0 +1,16 @@
+{
+  "entidades": [{ "clave": "26", "nombre": "Sonora" }],
+  "municipios": [
+    "Agua Prieta",
+    "Cajeme",
+    "Empalme",
+    "Etchojoa",
+    "Guaymas",
+    "Hermosillo",
+    "Navojoa",
+    "Nogales",
+    "Obregón",
+    "Puerto Peñasco",
+    "San Luis Río Colorado"
+  ]
+}
