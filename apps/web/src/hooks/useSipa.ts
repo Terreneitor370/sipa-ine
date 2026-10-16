@@ -1,5 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import type { Entidad, FeatureCollectionGeo, RiesgoRespuesta, SeccionFicha } from "../types/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type {
+  Entidad,
+  FeatureCollectionGeo,
+  RiesgoRespuesta,
+  SeccionFicha,
+  SimulacionRequest,
+} from "../types/api";
 import * as api from "../api/recursos";
 
 export function useRiesgo(filtros: {
@@ -46,5 +52,11 @@ export function useSeccion(id: string) {
     queryFn: () => api.obtenerSeccion(id),
     enabled: Boolean(id),
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useSimulacion() {
+  return useMutation({
+    mutationFn: (req: SimulacionRequest) => api.crearSimulacion(req),
   });
 }

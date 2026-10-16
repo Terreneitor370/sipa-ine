@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { FeatureCollectionGeo, RiesgoRespuesta, SeccionFicha } from "../types/api";
+import type {
+  FeatureCollectionGeo,
+  RiesgoRespuesta,
+  SeccionFicha,
+  SimulacionResumen,
+} from "../types/api";
 import riesgo from "../mocks/riesgo.json";
 import geo from "../mocks/geo-sonora.json";
 import seccionJson from "../mocks/seccion-1234.json";
+import simulacionJson from "../mocks/simulacion.json";
 
 /**
  * Consistencia de los mocks con el contrato congelado (16 de octubre).
@@ -11,6 +17,7 @@ import seccionJson from "../mocks/seccion-1234.json";
 describe("mocks del contrato de API", () => {
   const r = riesgo as unknown as RiesgoRespuesta;
   const seccion = seccionJson as unknown as SeccionFicha;
+  const sim = simulacionJson as unknown as SimulacionResumen;
 
   it("cada sección del riesgo tiene geometría y clave única", () => {
     const claves = r.secciones.map((s) => s.claveSeccion);
@@ -58,5 +65,14 @@ describe("mocks del contrato de API", () => {
     }
     const proyectado = seccion.historico.find((p) => p.proyectado);
     expect(proyectado?.anio).toBe(2027);
+  });
+
+  it("la simulación reduce la abstención y conserva la distribución por nivel", () => {
+    const { A, B } = sim.resumen.porNivel;
+    const suma = (n: typeof A) => n.MUY_ALTO + n.ALTO + n.MEDIO + n.BAJO;
+    expect(suma(A)).toBe(suma(B));
+    expect(sim.resumen.abstencionPromedio.B).toBeLessThanOrEqual(
+      sim.resumen.abstencionPromedio.A,
+    );
   });
 });

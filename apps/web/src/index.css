@@ -40,3 +40,42 @@ body {
   color: #111827;
   box-shadow: none;
 }
+
+/* Palancas del simulador: pista fina y pulgar cuadrado (sistema de diseño) */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 12px;
+  background: transparent;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  background: #d1d5db;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  height: 12px;
+  width: 12px;
+  border: none;
+  border-radius: 0;
+  background: #0f4c81;
+  box-shadow: none;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: #d1d5db;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  border: none;
+  border-radius: 0;
+  background: #0f4c81;
+  box-shadow: none;
+}

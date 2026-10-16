@@ -1,10 +1,18 @@
-import type { Entidad, FeatureCollectionGeo, RiesgoRespuesta, SeccionFicha } from "../types/api";
+import type {
+  Entidad,
+  FeatureCollectionGeo,
+  RiesgoRespuesta,
+  SeccionFicha,
+  SimulacionRequest,
+  SimulacionResumen,
+} from "../types/api";
 import { USAR_MOCKS, http } from "./client";
 
 import riesgoMock from "../mocks/riesgo.json";
 import catalogosMock from "../mocks/catalogos.json";
 import geoMock from "../mocks/geo-sonora.json";
 import seccionMock from "../mocks/seccion-1234.json";
+import simulacionMock from "../mocks/simulacion.json";
 
 const espera = (ms = 250) => new Promise((r) => setTimeout(r, ms));
 
@@ -55,5 +63,14 @@ export async function obtenerSeccion(id: string): Promise<SeccionFicha> {
     return { ...(seccionMock as unknown as SeccionFicha), claveSeccion: id };
   }
   const { data } = await http.get<SeccionFicha>(`/secciones/${id}`);
+  return data;
+}
+
+export async function crearSimulacion(req: SimulacionRequest): Promise<SimulacionResumen> {
+  if (USAR_MOCKS) {
+    await espera(400);
+    return simulacionMock as unknown as SimulacionResumen;
+  }
+  const { data } = await http.post<SimulacionResumen>("/simulaciones", req);
   return data;
 }
