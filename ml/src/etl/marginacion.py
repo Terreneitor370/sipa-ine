@@ -54,7 +54,8 @@ def equivalencias_ine_inegi(carpeta_eceg: Path) -> pd.DataFrame:
     """Tabla municipio INE -> municipio INEGI a partir del catálogo del ECEG.
 
     El Excel tiene dos bloques lado a lado (INEGI a la izquierda, INE a la
-    derecha) alineados por fila. Se valida la alineación comparando nombres.
+    derecha) alineados por fila. Los nombres pueden diferir por abreviaturas
+    ("DR. ARROYO" vs "Doctor Arroyo"), así que la validación es por entidad.
     """
     ruta = next(Path(carpeta_eceg).rglob("cat_municipios_2020*.xlsx"))
     x = pd.read_excel(ruta, header=None, dtype=str)
@@ -68,8 +69,7 @@ def equivalencias_ine_inegi(carpeta_eceg: Path) -> pd.DataFrame:
         "municipio_ine": a_numero(datos[8]),
         "nombre_ine": datos[9],
     }).dropna(subset=["entidad", "municipio_inegi", "entidad_ine", "municipio_ine"])
-    coincide = tabla["nombre_inegi"].map(normalizar) == tabla["nombre_ine"].map(normalizar)
-    tabla = tabla[coincide & tabla["entidad"].eq(tabla["entidad_ine"])]
+    tabla = tabla[tabla["entidad"].eq(tabla["entidad_ine"])]
     tabla = tabla[["entidad", "municipio_ine", "municipio_inegi", "nombre_inegi"]].astype(
         {"entidad": int, "municipio_ine": int, "municipio_inegi": int})
     return tabla.reset_index(drop=True)
