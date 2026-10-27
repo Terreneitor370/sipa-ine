@@ -7,6 +7,7 @@ import { IconoDescarga, IconoEnlace } from "../components/ui/Icons";
 import { HistoryChart } from "../components/charts/HistoryChart";
 import { ShapBarChart } from "../components/charts/ShapBarChart";
 import { useSeccion } from "../hooks/useSipa";
+import { coloniasDeSeccion } from "../api/recursos";
 import { formatEntero, formatKm, formatPct } from "../lib/format";
 import { nivelDesdeAbstencion } from "../lib/riesgo";
 
@@ -19,6 +20,7 @@ export function SeccionPage() {
   }
 
   const nivel = nivelDesdeAbstencion(data.predicciones.media);
+  const colonias = coloniasDeSeccion(data.claveSeccion);
 
   const exportarShap = () => {
     const filas = [
@@ -132,8 +134,7 @@ export function SeccionPage() {
         </div>
 
         <div className="grid gap-3 lg:grid-cols-2">
-          <Card titulo="Histórico de abstención (2018-2027)" accion={<span className="text-[10px] text-ink-2">— Real | --- Proyección</span>}>
-            <HistoryChart historico={data.historico} />
+          <Card titulo="Histórico de abstención (2018-2027)" accion={<span className="text-[10px] text-ink-2">— Real | --- Proyección</span>}>            <HistoryChart historico={data.historico} />
             <p className="mt-2 text-[10px] italic text-ink-2">
               Comportamiento electoral registrado en actas de escrutinio DERFE. | Nivel de confianza: 95%
             </p>
@@ -154,7 +155,14 @@ export function SeccionPage() {
         </div>
 
         <div className="flex items-center justify-between border-t border-linea bg-fondo px-1 py-2 text-[11px] text-ink-2">
-          <span>Distrito electoral federal {data.distrito} · {data.municipio}, {data.entidad} · Datos agregados, sin datos personales</span>
+          <span>
+            Distrito electoral federal {data.distrito} · {data.municipio}, {data.entidad} · Datos agregados, sin datos personales
+            {colonias.length > 0 && (
+              <> · Cubre {colonias.length < 3
+                ? colonias.map((c) => `Col. ${c.colonia}`).join(" y ")
+                : `las colonias ${colonias.map((c) => `Col. ${c.colonia}`).join(", ")}`}</>
+            )}
+          </span>
           <div className="flex gap-2">
             <Button variante="secundario" onClick={() => window.print()}><IconoDescarga /> Descargar Ficha PDF</Button>
             <Button variante="secundario" onClick={exportarShap}><IconoDescarga /> Exportar Datos SHAP (CSV)</Button>

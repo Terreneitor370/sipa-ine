@@ -219,8 +219,8 @@ export function MapaPage() {
             <RiskMap
               geo={geo.data}
               riesgo={filtrado}
-              centro={[29.0, -110.9]}
-              zoom={7}
+              centro={[29.6, -111.4]}
+              zoom={6}
               onSeleccion={(id) => navigate(`/seccion/${id}`)}
             />
           ) : (

@@ -56,6 +56,10 @@ export async function buscarColonias(
   return data;
 }
 
+export function coloniasDeSeccion(claveSeccion: string): ColoniaResultado[] {
+  return (coloniasMock as ColoniaResultado[]).filter((c) => c.claveSeccion === claveSeccion);
+}
+
 export async function obtenerRiesgo(filtros: {
   entidad: string;
   municipio?: string;
