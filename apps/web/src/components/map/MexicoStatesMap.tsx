@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { GeoJSON, MapContainer, ScaleControl, TileLayer, useMapEvents } from "react-leaflet";
 import type { Layer, Path, PathOptions } from "leaflet";
 import { OsmAttribution } from "./OsmAttribution";
-import { COLOR_NIVEL, nivelDesdeAbstencion } from "../../lib/riesgo";
+import { COLOR_NIVEL, ETIQUETA_NIVEL, nivelDesdeAbstencion } from "../../lib/riesgo";
 
 const OSM_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 const OSM_ATTRIBUTION =
@@ -32,11 +32,14 @@ function claveEntidadDesdeFeature(props: Record<string, unknown> | null | undefi
 
 export function MexicoStatesMap({
   entidadesConDatos,
+  conSecciones,
   abstencionPromedioPorEntidad,
   entidadResaltada,
   onSeleccionEntidad,
 }: {
   entidadesConDatos: Set<string>;
+  /** Entidades con cartografía de secciones cargada (demo: Sonora) */
+  conSecciones?: Set<string>;
   abstencionPromedioPorEntidad: Map<string, number>;
   entidadResaltada?: string;
   onSeleccionEntidad?: (clave: string, nombre: string) => void;
@@ -107,15 +110,23 @@ export function MexicoStatesMap({
           const clave = claveEntidadDesdeFeature(props);
           const nombre = props.state_name ?? "Entidad";
           const tieneDatos = clave != null && entidadesConDatos.has(clave);
+          const navegable = clave != null && (conSecciones?.has(clave) ?? false);
+          const abst = clave != null ? abstencionPromedioPorEntidad.get(clave) : undefined;
+          const nivel = abst != null ? nivelDesdeAbstencion(abst) : null;
           const html =
             `<div style="font-size:11px;line-height:1.45">` +
             `<b>${nombre}</b><br/>` +
-            (tieneDatos
-              ? `<span>Datos de riesgo disponibles · clic para detalle</span>`
+            (tieneDatos && nivel && abst != null
+              ? `<span><span style="background:${COLOR_NIVEL[nivel]};color:${
+                  nivel === "MEDIO" || nivel === "BAJO" ? "#1a2a4a" : "#fff"
+                };padding:0 4px;border-radius:2px">${ETIQUETA_NIVEL[nivel]} · ${(abst * 100).toFixed(1)}%</span></span><br/>` +
+                (navegable
+                  ? `<span>Secciones con cartografía de demo · clic para detalle</span>`
+                  : `<span style="color:#6B7280">Cartografía de secciones pendiente en la demo</span>`)
               : `<span style="color:#6B7280">Sin predicciones en este entorno de demo</span>`) +
             `</div>`;
           layer.bindTooltip(html, { sticky: true });
-          if (tieneDatos && clave) {
+          if (navegable && clave) {
             layer.on("click", () => onSeleccionEntidad?.(clave, nombre));
             (layer as Path).on("mouseover", function (this: Path) {
               this.setStyle({ weight: 2, color: "#d5007f" });

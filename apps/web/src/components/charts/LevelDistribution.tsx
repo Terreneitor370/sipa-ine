@@ -2,14 +2,20 @@ import type { ResumenNivel } from "../../types/api";
 import { COLOR_NIVEL, ETIQUETA_NIVEL, NIVELES } from "../../lib/riesgo";
 import { formatEntero } from "../../lib/format";
 
-export function LevelDistribution({ porNivel }: { porNivel: ResumenNivel }) {
+export function LevelDistribution({
+  porNivel,
+  unidad = "Secciones",
+}: {
+  porNivel: ResumenNivel;
+  unidad?: string;
+}) {
   const total = NIVELES.reduce((acc, n) => acc + porNivel[n], 0);
   return (
     <table className="w-full text-[12px]" data-testid="distribucion-nivel">
       <thead>
         <tr className="bg-tabla text-left text-[10px] uppercase tracking-wide text-ink-2">
           <th className="px-1 py-1 font-medium">Nivel</th>
-          <th className="px-1 py-1 text-right font-medium">Secciones</th>
+          <th className="px-1 py-1 text-right font-medium">{unidad}</th>
           <th className="px-1 py-1 text-right font-medium">%</th>
         </tr>
       </thead>

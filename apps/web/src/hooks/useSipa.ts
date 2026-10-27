@@ -4,22 +4,31 @@ import type {
   FeatureCollectionGeo,
   ModeloInfo,
   PriorizacionRespuesta,
+  RiesgoNacionalRespuesta,
   RiesgoRespuesta,
   SeccionFicha,
   SimulacionRequest,
 } from "../types/api";
 import * as api from "../api/recursos";
 
+export function useRiesgoNacional() {
+  return useQuery<RiesgoNacionalRespuesta>({
+    queryKey: ["riesgo", "nacional"],
+    queryFn: api.obtenerRiesgoNacional,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useRiesgo(filtros: {
   entidad: string;
   municipio?: string;
   distrito?: number;
   nivel?: string;
-}) {
+}, enabled = true) {
   return useQuery<RiesgoRespuesta>({
     queryKey: ["riesgo", filtros],
     queryFn: () => api.obtenerRiesgo(filtros),
-    enabled: Boolean(filtros.entidad),
+    enabled: Boolean(filtros.entidad) && enabled,
     staleTime: 5 * 60 * 1000,
   });
 }

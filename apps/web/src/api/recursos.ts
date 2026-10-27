@@ -3,6 +3,7 @@ import type {
   FeatureCollectionGeo,
   ModeloInfo,
   PriorizacionRespuesta,
+  RiesgoNacionalRespuesta,
   RiesgoRespuesta,
   SeccionFicha,
   SimulacionRequest,
@@ -11,6 +12,7 @@ import type {
 import { USAR_MOCKS, http } from "./client";
 
 import riesgoMock from "../mocks/riesgo.json";
+import riesgoNacionalMock from "../mocks/riesgo-nacional.json";
 import catalogosMock from "../mocks/catalogos.json";
 import geoMock from "../mocks/geo-sonora.json";
 import seccionMock from "../mocks/seccion-1234.json";
@@ -65,6 +67,25 @@ export async function obtenerRiesgo(filtros: {
     return riesgoMock as unknown as RiesgoRespuesta;
   }
   const { data } = await http.get<RiesgoRespuesta>("/riesgo", { params: filtros });
+  return data;
+}
+
+export async function obtenerRiesgoNacional(): Promise<RiesgoNacionalRespuesta> {
+  if (USAR_MOCKS) {
+    await espera(120);
+    const nacional = riesgoNacionalMock as unknown as RiesgoNacionalRespuesta;
+    // Mantener a Sonora consistente con las secciones de demo (mocks/riesgo.json)
+    const seccionesSonora = riesgoMock as unknown as RiesgoRespuesta;
+    return {
+      ...nacional,
+      entidades: nacional.entidades.map((e) =>
+        e.clave === "26"
+          ? { ...e, abstencionPredicha: seccionesSonora.abstencionPromedio }
+          : e,
+      ),
+    };
+  }
+  const { data } = await http.get<RiesgoNacionalRespuesta>("/riesgo/nacional");
   return data;
 }
 

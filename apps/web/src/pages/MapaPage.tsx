@@ -10,8 +10,8 @@ import { Legend } from "../components/map/Legend";
 import { RiskMap } from "../components/map/RiskMap";
 import { MexicoStatesMap } from "../components/map/MexicoStatesMap";
 import { ColoniaSearch } from "../components/map/ColoniaSearch";
-import { useEntidades, useGeo, useModelo, useMunicipios, useRiesgo } from "../hooks/useSipa";
-import { abstencionPromedio, contarPorNivel } from "../lib/riesgo";
+import { useEntidades, useGeo, useModelo, useMunicipios, useRiesgo, useRiesgoNacional } from "../hooks/useSipa";
+import { abstencionPromedio, contarPorNivel, nivelDesdeAbstencion } from "../lib/riesgo";
 import { formatEntero, formatPct } from "../lib/format";
 
 const TODOS = "__todos__";
@@ -43,7 +43,8 @@ export function MapaPage() {
   const claveEntidadDatos = esNacional ? "26" : filtros.entidad;
   const municipios = useMunicipios(claveEntidadDatos);
   const geo = useGeo(claveEntidadDatos, !esNacional);
-  const riesgo = useRiesgo({ entidad: claveEntidadDatos });
+  const riesgo = useRiesgo({ entidad: claveEntidadDatos }, !esNacional);
+  const riesgoNacional = useRiesgoNacional();
   const modelo = useModelo();
 
   const todos = useMemo(() => riesgo.data?.secciones ?? [], [riesgo.data]);
@@ -80,14 +81,33 @@ export function MapaPage() {
   const nombreEntidad =
     entidades.data?.find((e) => e.clave === filtros.entidad)?.nombre ?? "México";
 
-  const entidadesConDatos = useMemo(() => new Set(["26"]), []);
+  const entidadesConDatos = useMemo(
+    () => new Set((riesgoNacional.data?.entidades ?? []).map((e) => e.clave)),
+    [riesgoNacional.data],
+  );
   const abstencionPorEntidad = useMemo(() => {
     const m = new Map<string, number>();
-    if (riesgo.data?.secciones.length) {
-      m.set("26", abstencionPromedio(riesgo.data.secciones));
+    for (const e of riesgoNacional.data?.entidades ?? []) {
+      m.set(e.clave, e.abstencionPredicha);
+    }
+    if (!esNacional && riesgo.data?.secciones.length) {
+      m.set(claveEntidadDatos, abstencionPromedio(riesgo.data.secciones));
     }
     return m;
-  }, [riesgo.data]);
+  }, [riesgoNacional.data, riesgo.data, esNacional, claveEntidadDatos]);
+  const umbrales =
+    (esNacional ? riesgoNacional.data?.umbrales : riesgo.data?.umbrales) ?? undefined;
+  const resumenNacional = useMemo(() => {
+    const entidades = riesgoNacional.data?.entidades ?? [];
+    if (entidades.length === 0) return undefined;
+    const totalSecciones = entidades.reduce((acc, e) => acc + e.secciones, 0);
+    const ponderada =
+      entidades.reduce((acc, e) => acc + e.abstencionPredicha * e.secciones, 0) / totalSecciones;
+    const porNivel = contarPorNivel(
+      entidades.map((e) => ({ nivel: nivelDesdeAbstencion(e.abstencionPredicha) })) as never,
+    );
+    return { entidades: entidades.length, totalSecciones, ponderada, porNivel };
+  }, [riesgoNacional.data]);
 
   const irAEntidad = (clave: string) => {
     const next = { ...borrador, entidad: clave, municipio: TODOS, distrito: TODOS };
@@ -191,11 +211,11 @@ export function MapaPage() {
           {esNacional ? (
             <MexicoStatesMap
               entidadesConDatos={entidadesConDatos}
+              conSecciones={new Set(["26"])}
               abstencionPromedioPorEntidad={abstencionPorEntidad}
-              entidadResaltada="26"
               onSeleccionEntidad={(clave) => irAEntidad(clave)}
             />
-          ) : geo.data && filtrado ? (
+          ) : claveEntidadDatos === "26" && geo.data && filtrado ? (
             <RiskMap
               geo={geo.data}
               riesgo={filtrado}
@@ -204,35 +224,73 @@ export function MapaPage() {
               onSeleccion={(id) => navigate(`/seccion/${id}`)}
             />
           ) : (
-            <p className="p-4 text-[13px] text-ink-2">Cargando cartografía y predicciones…</p>
+            <p className="p-4 text-[13px] text-ink-2">
+              La cartografía de secciones de la demo está disponible solo para Sonora. Este estado
+              se mostrará en el mapa nacional con su nivel de riesgo estimado.
+            </p>
           )}
         </div>
 
         <div className="w-[30%] space-y-3 overflow-auto bg-fondo p-3">
           <Card
             titulo="Resumen"
-            accion={<span className="text-[10px] uppercase text-ink-2">Estadística 2027</span>}
+            accion={
+              <span className="text-[10px] uppercase text-ink-2">
+                {esNacional ? "Entidades con datos" : "Estadística 2027"}
+              </span>
+            }
           >
             <div className="divide-y divide-linea-2 text-[13px]">
-              <div className="flex items-center justify-between py-1.5">
-                <span className="text-ink-2">Secciones</span>
-                <span className="font-semibold tabular-nums">{formatEntero(visibles.length)}</span>
-              </div>
-              <div className="flex items-center justify-between py-1.5">
-                <span className="text-ink-2">Abstención promedio</span>
-                <span className="font-semibold tabular-nums">
-                  {formatPct(abstencionPromedio(visibles))}
-                </span>
-              </div>
+              {esNacional && resumenNacional ? (
+                <>
+                  <div className="flex items-center justify-between py-1.5">
+                    <span className="text-ink-2">Entidades</span>
+                    <span className="font-semibold tabular-nums">
+                      {formatEntero(resumenNacional.entidades)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-1.5">
+                    <span className="text-ink-2">Secciones</span>
+                    <span className="font-semibold tabular-nums">
+                      {formatEntero(resumenNacional.totalSecciones)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-1.5">
+                    <span className="text-ink-2">Abstención ponderada</span>
+                    <span className="font-semibold tabular-nums">
+                      {formatPct(resumenNacional.ponderada)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between py-1.5">
+                    <span className="text-ink-2">Secciones</span>
+                    <span className="font-semibold tabular-nums">{formatEntero(visibles.length)}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1.5">
+                    <span className="text-ink-2">Abstención promedio</span>
+                    <span className="font-semibold tabular-nums">
+                      {formatPct(abstencionPromedio(visibles))}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </Card>
 
           <Card
-            titulo="Distribución por nivel"
-            accion={<span className="text-[10px] text-ink-2">N={formatEntero(visibles.length)}</span>}
+            titulo={esNacional ? "Distribución por nivel (entidades)" : "Distribución por nivel"}
+            accion={
+              <span className="text-[10px] text-ink-2">
+                N={formatEntero(esNacional ? (resumenNacional?.entidades ?? 0) : visibles.length)}
+              </span>
+            }
             sinPadding
           >
-            {filtrado ? (
+            {esNacional && resumenNacional ? (
+              <LevelDistribution porNivel={resumenNacional.porNivel} unidad="Entidades" />
+            ) : filtrado ? (
               <LevelDistribution porNivel={porNivel} />
             ) : (
               <p className="p-3 text-[13px] text-ink-2">Cargando…</p>
@@ -243,7 +301,7 @@ export function MapaPage() {
             titulo="Leyenda de corte"
             accion={<span className="text-[10px] uppercase text-ink-2">Umbrales</span>}
           >
-            <Legend umbrales={riesgo.data?.umbrales} />
+            <Legend umbrales={umbrales} />
           </Card>
 
           <Card

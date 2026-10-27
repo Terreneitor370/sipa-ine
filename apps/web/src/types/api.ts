@@ -37,6 +37,21 @@ export interface RiesgoRespuesta {
   secciones: RiesgoSeccion[];
 }
 
+export interface EntidadRiesgo {
+  clave: string;
+  nombre: string;
+  secciones: number;
+  abstencionPredicha: number;
+}
+
+export interface RiesgoNacionalRespuesta {
+  escenario: Escenario;
+  totalSecciones: number;
+  abstencionPromedio: number;
+  umbrales: Record<NivelRiesgo, { min: number | null; max: number | null }>;
+  entidades: EntidadRiesgo[];
+}
+
 export interface IndicadoresSeccion {
   listaNominal: number;
   electoresPorCasilla: number;
