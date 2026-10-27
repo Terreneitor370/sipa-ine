@@ -3,6 +3,7 @@ export type NivelRiesgo = "MUY_ALTO" | "ALTO" | "MEDIO" | "BAJO";
 export interface Entidad {
   clave: string;
   nombre: string;
+  secciones?: number;
 }
 
 export type Escenario = "inercial" | "intervencion";
@@ -90,6 +91,18 @@ export interface SeccionFicha {
   indicadores: IndicadoresSeccion;
   historico: PuntoHistorico[];
   factoresTop: FactorShap[];
+}
+
+export interface ColoniaResultado {
+  colonia: string;
+  municipio: string;
+  entidad: string;
+  entidadClave: string;
+  seccionId: number;
+  claveSeccion: string;
+  lat: number;
+  lon: number;
+  bbox?: [number, number, number, number];
 }
 
 export interface Palancas {

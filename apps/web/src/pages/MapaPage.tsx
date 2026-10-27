@@ -58,7 +58,9 @@ export function MapaPage() {
   );
 
   const opcionesDistritos = useMemo(() => {
-    const unicos = [...new Set(todos.map((s) => s.distrito))].sort((a, b) => a - b);
+    const unicos = [...new Set(todos.map((s) => s.distrito))]
+      .filter((d) => d > 0)
+      .sort((a, b) => a - b);
     return [
       { valor: TODOS, texto: `Todos (${unicos.length})` },
       ...unicos.map((d) => ({ valor: String(d), texto: `Distrito ${d}` })),

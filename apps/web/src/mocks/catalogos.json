@@ -1,50 +1,216 @@
 {
   "entidades": [
-    { "clave": "00", "nombre": "México (vista nacional)" },
-    { "clave": "01", "nombre": "Aguascalientes" },
-    { "clave": "02", "nombre": "Baja California" },
-    { "clave": "03", "nombre": "Baja California Sur" },
-    { "clave": "04", "nombre": "Campeche" },
-    { "clave": "05", "nombre": "Coahuila" },
-    { "clave": "06", "nombre": "Colima" },
-    { "clave": "07", "nombre": "Chiapas" },
-    { "clave": "08", "nombre": "Chihuahua" },
-    { "clave": "09", "nombre": "Ciudad de México" },
-    { "clave": "10", "nombre": "Durango" },
-    { "clave": "11", "nombre": "Guanajuato" },
-    { "clave": "12", "nombre": "Guerrero" },
-    { "clave": "13", "nombre": "Hidalgo" },
-    { "clave": "14", "nombre": "Jalisco" },
-    { "clave": "15", "nombre": "Estado de México" },
-    { "clave": "16", "nombre": "Michoacán" },
-    { "clave": "17", "nombre": "Morelos" },
-    { "clave": "18", "nombre": "Nayarit" },
-    { "clave": "19", "nombre": "Nuevo León" },
-    { "clave": "20", "nombre": "Oaxaca" },
-    { "clave": "21", "nombre": "Puebla" },
-    { "clave": "22", "nombre": "Querétaro" },
-    { "clave": "23", "nombre": "Quintana Roo" },
-    { "clave": "24", "nombre": "San Luis Potosí" },
-    { "clave": "25", "nombre": "Sinaloa" },
-    { "clave": "26", "nombre": "Sonora" },
-    { "clave": "27", "nombre": "Tabasco" },
-    { "clave": "28", "nombre": "Tamaulipas" },
-    { "clave": "29", "nombre": "Tlaxcala" },
-    { "clave": "30", "nombre": "Veracruz" },
-    { "clave": "31", "nombre": "Yucatán" },
-    { "clave": "32", "nombre": "Zacatecas" }
+    {
+      "entidad": 1,
+      "nombre": "Aguascalientes",
+      "secciones": 519
+    },
+    {
+      "entidad": 2,
+      "nombre": "Baja California",
+      "secciones": 1425
+    },
+    {
+      "entidad": 3,
+      "nombre": "Baja California Sur",
+      "secciones": 462
+    },
+    {
+      "entidad": 4,
+      "nombre": "Campeche",
+      "secciones": 527
+    },
+    {
+      "entidad": 5,
+      "nombre": "Coahuila",
+      "secciones": 1533
+    },
+    {
+      "entidad": 6,
+      "nombre": "Colima",
+      "secciones": 400
+    },
+    {
+      "entidad": 7,
+      "nombre": "Chiapas",
+      "secciones": 3244
+    },
+    {
+      "entidad": 8,
+      "nombre": "Chihuahua",
+      "secciones": 2340
+    },
+    {
+      "entidad": 9,
+      "nombre": "Ciudad de México",
+      "secciones": 3044
+    },
+    {
+      "entidad": 10,
+      "nombre": "Durango",
+      "secciones": 1320
+    },
+    {
+      "entidad": 11,
+      "nombre": "Guanajuato",
+      "secciones": 4099
+    },
+    {
+      "entidad": 12,
+      "nombre": "Guerrero",
+      "secciones": 2219
+    },
+    {
+      "entidad": 13,
+      "nombre": "Hidalgo",
+      "secciones": 1720
+    },
+    {
+      "entidad": 14,
+      "nombre": "Jalisco",
+      "secciones": 4071
+    },
+    {
+      "entidad": 15,
+      "nombre": "Estado de México",
+      "secciones": 5246
+    },
+    {
+      "entidad": 16,
+      "nombre": "Michoacán",
+      "secciones": 2936
+    },
+    {
+      "entidad": 17,
+      "nombre": "Morelos",
+      "secciones": 1271
+    },
+    {
+      "entidad": 18,
+      "nombre": "Nayarit",
+      "secciones": 610
+    },
+    {
+      "entidad": 19,
+      "nombre": "Nuevo León",
+      "secciones": 3745
+    },
+    {
+      "entidad": 20,
+      "nombre": "Oaxaca",
+      "secciones": 3445
+    },
+    {
+      "entidad": 21,
+      "nombre": "Puebla",
+      "secciones": 3521
+    },
+    {
+      "entidad": 22,
+      "nombre": "Querétaro",
+      "secciones": 1200
+    },
+    {
+      "entidad": 23,
+      "nombre": "Quintana Roo",
+      "secciones": 780
+    },
+    {
+      "entidad": 24,
+      "nombre": "San Luis Potosí",
+      "secciones": 1700
+    },
+    {
+      "entidad": 25,
+      "nombre": "Sinaloa",
+      "secciones": 1704
+    },
+    {
+      "entidad": 26,
+      "nombre": "Sonora",
+      "secciones": 1642
+    },
+    {
+      "entidad": 27,
+      "nombre": "Tabasco",
+      "secciones": 1452
+    },
+    {
+      "entidad": 28,
+      "nombre": "Tamaulipas",
+      "secciones": 2189
+    },
+    {
+      "entidad": 29,
+      "nombre": "Tlaxcala",
+      "secciones": 764
+    },
+    {
+      "entidad": 30,
+      "nombre": "Veracruz",
+      "secciones": 5129
+    },
+    {
+      "entidad": 31,
+      "nombre": "Yucatán",
+      "secciones": 1105
+    },
+    {
+      "entidad": 32,
+      "nombre": "Zacatecas",
+      "secciones": 1030
+    }
   ],
-  "municipios": [
-    "Agua Prieta",
-    "Cajeme",
-    "Empalme",
-    "Etchojoa",
-    "Guaymas",
-    "Hermosillo",
-    "Navojoa",
-    "Nogales",
-    "Obregón",
-    "Puerto Peñasco",
-    "San Luis Río Colorado"
+  "municipiosSonora": [
+    {
+      "entidad": 26,
+      "municipio": 17,
+      "nombre": "Agua Prieta"
+    },
+    {
+      "entidad": 26,
+      "municipio": 18,
+      "nombre": "Cajeme"
+    },
+    {
+      "entidad": 26,
+      "municipio": 25,
+      "nombre": "Empalme"
+    },
+    {
+      "entidad": 26,
+      "municipio": 26,
+      "nombre": "Etchojoa"
+    },
+    {
+      "entidad": 26,
+      "municipio": 29,
+      "nombre": "Guaymas"
+    },
+    {
+      "entidad": 26,
+      "municipio": 30,
+      "nombre": "Hermosillo"
+    },
+    {
+      "entidad": 26,
+      "municipio": 43,
+      "nombre": "Nogales"
+    },
+    {
+      "entidad": 26,
+      "municipio": 45,
+      "nombre": "Navojoa"
+    },
+    {
+      "entidad": 26,
+      "municipio": 40,
+      "nombre": "Puerto Peñasco"
+    },
+    {
+      "entidad": 26,
+      "municipio": 55,
+      "nombre": "San Luis Río Colorado"
+    }
   ]
 }

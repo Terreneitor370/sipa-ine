@@ -88,3 +88,12 @@ export function useModelo() {
     staleTime: 60 * 60 * 1000,
   });
 }
+
+/** RF-08: escenarios guardados del analista (contrato GET /escenarios). */
+export function useEscenarios() {
+  return useQuery<import("../lib/adaptadores").EscenarioGuardado[]>({
+    queryKey: ["escenarios"],
+    queryFn: api.obtenerEscenarios,
+    staleTime: 60 * 1000,
+  });
+}

@@ -1,22 +1,64 @@
 {
   "version": "1.2.0",
-  "algoritmo": "XGBRegressor (Gradient Boosting Regressor)",
-  "entrenamiento": "2018-2021",
-  "prueba": "2024 (OOT temporal)",
-  "metricas": [
-    { "nombre": "RMSE (Error Cuadrático Medio)", "modelo": 4.21, "baseline": 4.89, "mejora": "-13.9%" },
-    { "nombre": "MAE (Error Absoluto Medio)", "modelo": 3.15, "baseline": 3.72, "mejora": "-15.3%" },
-    { "nombre": "R² (Coeficiente de Determinación)", "modelo": 0.412, "baseline": null, "mejora": null }
-  ],
-  "importanciaVariables": [
-    { "variable": "abst_lag_mismo_tipo", "gain": 0.28 },
-    { "variable": "abst_lag1", "gain": 0.21 },
-    { "variable": "dist_mac_km", "gain": 0.11 },
-    { "variable": "ind_marginacion", "gain": 0.09 },
-    { "variable": "delta_abst", "gain": 0.07 },
-    { "variable": "pct_viv_internet", "gain": 0.05 },
-    { "variable": "escolaridad_prom", "gain": 0.04 },
-    { "variable": "electores_por_casilla", "gain": 0.03 }
+  "entrenadoEn": "2025-11-08T18:00:00Z",
+  "eleccionPrueba": 2024,
+  "seccionesEntrenamiento": 53113,
+  "metricas": {
+    "rmse": 4.21,
+    "mae": 3.15,
+    "r2": 0.412
+  },
+  "baseline": {
+    "rmse": 4.89,
+    "mae": 3.72,
+    "descripcion": "Regresión sobre abstención histórica del mismo tipo de elección"
+  },
+  "umbrales": {
+    "muyAlto": 0.559,
+    "alto": 0.522,
+    "medio": 0.485
+  },
+  "importancia": [
+    {
+      "variable": "abst_lag_mismo_tipo",
+      "etiqueta": "abst_lag_mismo_tipo",
+      "importancia": 0.28
+    },
+    {
+      "variable": "abst_lag1",
+      "etiqueta": "abst_lag1",
+      "importancia": 0.21
+    },
+    {
+      "variable": "dist_mac_km",
+      "etiqueta": "dist_mac_km",
+      "importancia": 0.11
+    },
+    {
+      "variable": "ind_marginacion",
+      "etiqueta": "ind_marginacion",
+      "importancia": 0.09
+    },
+    {
+      "variable": "delta_abst",
+      "etiqueta": "delta_abst",
+      "importancia": 0.07
+    },
+    {
+      "variable": "pct_viv_internet",
+      "etiqueta": "pct_viv_internet",
+      "importancia": 0.05
+    },
+    {
+      "variable": "escolaridad_prom",
+      "etiqueta": "escolaridad_prom",
+      "importancia": 0.04
+    },
+    {
+      "variable": "electores_por_casilla",
+      "etiqueta": "electores_por_casilla",
+      "importancia": 0.03
+    }
   ],
   "fuentes": [
     "INE — Cómputos distritales 2018-2024",

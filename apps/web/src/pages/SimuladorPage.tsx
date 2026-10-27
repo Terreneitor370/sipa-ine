@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { KpiCard } from "../components/ui/KpiCard";
@@ -6,7 +7,7 @@ import { EncabezadoPagina } from "../components/ui/EncabezadoPagina";
 import { PalancasPanel } from "../components/simulator/PalancasPanel";
 import { ScenarioCompare } from "../components/simulator/ScenarioCompare";
 import { RiskMap } from "../components/map/RiskMap";
-import { useGeo, useRiesgo, useSimulacion } from "../hooks/useSipa";
+import { useGeo, useRiesgo, useSimulacion, useEscenarios } from "../hooks/useSipa";
 import type { Palancas, SimulacionResumen } from "../types/api";
 import { formatEntero, formatPp, formatPct } from "../lib/format";
 
@@ -24,12 +25,20 @@ export function SimuladorPage() {
 
   const geo = useGeo("26");
   const riesgo = useRiesgo({ entidad: "26" });
+  const escenarios = useEscenarios();
+  const queryClient = useQueryClient();
   const { mutate, isPending } = useSimulacion();
 
   const ejecutar = () => {
     mutate(
       { nombre, entidad: "26", palancas },
-      { onSuccess: (res) => setResultado(res) },
+      {
+        onSuccess: (res) => {
+          setResultado(res);
+          // RF-08: el escenario queda guardado; se refresca el listado
+          void queryClient.invalidateQueries({ queryKey: ["escenarios"] });
+        },
+      },
     );
   };
 
@@ -115,8 +124,41 @@ export function SimuladorPage() {
             </Card>
 
             <div className="grid gap-3 lg:grid-cols-2">
-              <Card titulo="Escenario A · inercial" sinPadding>
-                <div className="h-[260px]">
+              <Card titulo="Escenarios guardados" accion={<span className="text-[10px] text-ink-2">RF-08 · GET /escenarios</span>}>
+              <p className="text-[11px] text-ink-2">
+                Cada simulación que calculas queda guardada y se puede consultar aquí, con quién la
+                creó y cuántos votos recuperables proyectó.
+              </p>
+              {escenarios.isLoading ? (
+                <p className="py-3 text-[12px] text-ink-2">Cargando escenarios guardados…</p>
+              ) : (escenarios.data?.length ?? 0) > 0 ? (
+                <ul className="mt-2 space-y-1.5">
+                  {escenarios.data!.slice(0, 6).map((e) => (
+                    <li
+                      key={e.escenarioId}
+                      className="flex items-center justify-between gap-2 border border-linea bg-white px-2 py-1.5 text-[12px]"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-ink">{e.nombre}</p>
+                        <p className="text-[10px] text-ink-2">
+                          {e.entidadNombre} · {e.creadoPor} ·{" "}
+                          {e.creadoEn ? new Date(e.creadoEn).toLocaleDateString("es-MX") : "—"}
+                        </p>
+                      </div>
+                      <span className="shrink-0 tabular-nums text-[12px] font-semibold text-ink">
+                        {e.votosRecuperables.toLocaleString("es-MX")} votos
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="py-3 text-[12px] text-ink-2">
+                  Aún no hay escenarios guardados: calcula uno arriba y aparecerá aquí.
+                </p>
+              )}
+            </Card>
+
+            <Card titulo="Escenario A · inercial" sinPadding>                <div className="h-[260px]">
                   {geo.data && riesgo.data ? (
                     <RiskMap geo={geo.data} riesgo={riesgo.data} />
                   ) : (
