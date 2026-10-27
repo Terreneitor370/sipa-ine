@@ -27,7 +27,7 @@ export function GainImportanceChart({
             tick={{ fontSize: 11, fill: "#6B7280" }}
           />
           <Tooltip formatter={(value: number) => [value.toFixed(2), "Gain"]} />
-          <Bar dataKey="gain" fill="#0F4C81" isAnimationActive={false} />
+          <Bar dataKey="gain" fill="#950054" isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -31,7 +31,7 @@ export function HistoryChart({ historico }: { historico: PuntoHistorico[] }) {
           <Line
             type="monotone"
             dataKey="y"
-            stroke="#0F4C81"
+            stroke="#d5007f"
             strokeWidth={1.5}
             dot={{ r: 4 }}
             connectNulls={false}

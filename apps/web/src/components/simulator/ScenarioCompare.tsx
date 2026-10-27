@@ -28,7 +28,7 @@ export function ScenarioCompare({
         {NIVELES.map((nivel) => {
           const delta = porNivelB[nivel] - porNivelA[nivel];
           const ancho = (Math.abs(delta) / maxDelta) * 100;
-          const color = delta <= 0 ? "#0F4C81" : "#B2182B";
+          const color = delta <= 0 ? "#d5007f" : "#B2182B";
           return (
             <tr key={nivel} className="border-t border-linea-2">
               <td className="py-1.5">{ETIQUETA_NIVEL[nivel]}</td>
