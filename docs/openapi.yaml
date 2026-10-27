@@ -1,0 +1,886 @@
+openapi: 3.0.3
+info:
+  title: SIPA-INE API
+  version: 1.0.0
+  description: |
+    Contrato de la API REST de SIPA-INE (apps/api). El frontend consume solo esta API;
+    el servicio de ML es interno y no forma parte de este contrato.
+
+    Convenciones:
+    - JSON en camelCase.
+    - Porcentajes y tasas en fracción de 0 a 1 (0.6822 = 68.22%). El frontend los formatea.
+    - Una sección se identifica por la pareja (entidad, seccion), porque el número de sección
+      solo es único dentro de su entidad.
+    - Claves de municipio: `municipio` es la clave del INE (la que usan las secciones y la
+      cartografía); `municipioInegi` es la clave del INEGI/CONAPO. No son iguales.
+    - Autenticación: todas las rutas requieren `Authorization: Bearer <token>` salvo
+      `/health` y `/auth/login`. El token es un JWT con vigencia de 8 horas. No hay registro
+      público: los usuarios los crea un administrador (o el script de semillas).
+    - Toda ruta protegida puede responder 401 (NoAutenticado); el frontend debe manejarlo de
+      forma global (interceptor) y redirigir a /login.
+    - Roles: ANALISTA (consulta y simulación) y ADMIN (además, administra usuarios).
+    - Niveles de riesgo: MUY_ALTO, ALTO, MEDIO, BAJO (umbrales fijos por versión de modelo).
+    - El escenario por defecto es `inercial` (Escenario A, sin intervención, elección 2027).
+
+    Ejemplos: el historial electoral de la sección 26-729 (San Luis Río Colorado) y sus
+    indicadores son datos reales. Las predicciones, intervalos, umbrales, métricas y nombres
+    de colonias son ilustrativos hasta que exista el modelo entrenado; sirven para los mocks.
+
+    Estado del contrato:
+    - Las rutas sin marca están congeladas desde el 16 de octubre de 2026: solo se permiten
+      cambios que agregan (campos o parámetros opcionales nuevos).
+    - Las rutas marcadas con `x-estado: borrador` (simulación y priorización) pueden cambiar
+      hasta el 21 de octubre. Todo cambio entra por PR aprobado por los tres integrantes.
+security:
+  - bearerAuth: []
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local (docker compose)
+tags:
+  - name: Autenticación
+  - name: Usuarios
+  - name: Sistema
+  - name: Catálogos
+  - name: Cartografía
+  - name: Riesgo
+  - name: Secciones
+  - name: Búsqueda
+  - name: Modelo
+  - name: Escenarios
+paths:
+  /auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Inicia sesión y regresa un token JWT
+      description: |
+        Limitado a 5 intentos fallidos por IP cada 15 minutos (429 al exceder). El mensaje de
+        error es el mismo si el correo no existe o la contraseña es incorrecta.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginEntrada' }
+            example: { email: "analista@sipa-ine.mx", password: "********" }
+      responses:
+        '200':
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Sesion' }
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                expiraEn: "2026-10-22T02:00:00Z"
+                usuario: { id: 2, nombre: "Analista Demo", email: "analista@sipa-ine.mx", rol: ANALISTA }
+        '400': { $ref: '#/components/responses/ErrorValidacion' }
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: { code: INVALID_CREDENTIALS, message: "Correo o contraseña incorrectos" } }
+        '429':
+          description: Demasiados intentos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: { code: TOO_MANY_ATTEMPTS, message: "Demasiados intentos; espere 15 minutos" } }
+
+  /auth/me:
+    get:
+      tags: [Autenticación]
+      summary: Usuario de la sesión actual (para restaurar la sesión al recargar)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+
+  /usuarios:
+    get:
+      x-estado: borrador
+      tags: [Usuarios]
+      summary: Lista de usuarios (solo ADMIN)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    post:
+      x-estado: borrador
+      tags: [Usuarios]
+      summary: Crea un usuario (solo ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UsuarioEntrada' }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '400': { $ref: '#/components/responses/ErrorValidacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '409':
+          description: El correo ya existe
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /health:
+    get:
+      tags: [Sistema]
+      summary: Estado del API, de MySQL y del servicio de ML
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+              example: { api: ok, db: ok, mlService: ok, modeloVersion: "1.0.0" }
+
+  /entidades:
+    get:
+      tags: [Catálogos]
+      summary: Lista de las 32 entidades
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Entidad' }
+              example:
+                - { entidad: 2, nombre: "Baja California", secciones: 2104 }
+                - { entidad: 26, nombre: "Sonora", secciones: 1570 }
+
+  /entidades/{entidad}/municipios:
+    get:
+      tags: [Catálogos]
+      summary: Municipios de una entidad
+      parameters:
+        - $ref: '#/components/parameters/EntidadPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Municipio' }
+              example:
+                - { entidad: 26, municipio: 49, municipioInegi: 30, nombre: "Hermosillo" }
+                - { entidad: 26, municipio: 55, municipioInegi: 55, nombre: "San Luis Río Colorado" }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /geo/nacional:
+    get:
+      tags: [Cartografía]
+      summary: Contornos de entidades y municipios (TopoJSON)
+      description: |
+        Objetos `entidades` (propiedades: entidad, nombre) y `municipios` (propiedades:
+        entidad, municipio, nombre). Coordenadas WGS84. Se sirve con Cache-Control de 7 días.
+      responses:
+        '200':
+          description: TopoJSON
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopoJSON' }
+
+  /geo/{entidad}/{municipio}:
+    get:
+      tags: [Cartografía]
+      summary: Polígonos de las secciones de un municipio (TopoJSON)
+      description: |
+        Objeto `secciones`; cada geometría tiene las propiedades `entidad`, `municipio`,
+        `seccion` y `tipoSeccion`. El color NO viene aquí: se toma de /riesgo uniendo por
+        (entidad, seccion), para no volver a descargar geometría al cambiar de escenario.
+      parameters:
+        - $ref: '#/components/parameters/EntidadPath'
+        - $ref: '#/components/parameters/MunicipioPath'
+      responses:
+        '200':
+          description: TopoJSON
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopoJSON' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /riesgo:
+    get:
+      tags: [Riesgo]
+      summary: Predicción y nivel de riesgo por sección (para pintar el mapa)
+      parameters:
+        - $ref: '#/components/parameters/EntidadQuery'
+        - name: municipio
+          in: query
+          description: Clave INE del municipio. Recomendado para no traer toda la entidad.
+          schema: { type: integer }
+        - $ref: '#/components/parameters/Escenario'
+        - name: nivel
+          in: query
+          description: Filtra por uno o varios niveles separados por coma.
+          schema: { type: string, example: "MUY_ALTO,ALTO" }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RiesgoSecciones' }
+              example:
+                escenario: inercial
+                modeloVersion: "1.0.0"
+                eleccionObjetivo: 2027
+                umbrales: { muyAlto: 0.62, alto: 0.55, medio: 0.47 }
+                secciones:
+                  - entidad: 26
+                    seccion: 729
+                    municipio: 55
+                    tipoSeccion: urbana
+                    listaNominal: 15006
+                    abstencionPred: 0.7712
+                    p10: 0.7215
+                    p90: 0.8164
+                    nivelRiesgo: MUY_ALTO
+        '400': { $ref: '#/components/responses/ErrorValidacion' }
+
+  /riesgo/municipios:
+    get:
+      tags: [Riesgo]
+      summary: Riesgo agregado por municipio (vistas nacional y estatal)
+      description: La abstención es promedio ponderado por lista nominal.
+      parameters:
+        - name: entidad
+          in: query
+          description: Si se omite, regresa los municipios de todo el país.
+          schema: { type: integer, minimum: 1, maximum: 32 }
+        - $ref: '#/components/parameters/Escenario'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RiesgoMunicipio' }
+              example:
+                - entidad: 26
+                  municipio: 55
+                  nombre: "San Luis Río Colorado"
+                  secciones: 91
+                  listaNominal: 169161
+                  abstencionPred: 0.6955
+                  nivelRiesgo: MUY_ALTO
+                  porNivel: { MUY_ALTO: 38, ALTO: 29, MEDIO: 17, BAJO: 7 }
+
+  /secciones/{entidad}/{seccion}:
+    get:
+      tags: [Secciones]
+      summary: Ficha de la sección
+      parameters:
+        - $ref: '#/components/parameters/EntidadPath'
+        - $ref: '#/components/parameters/SeccionPath'
+        - $ref: '#/components/parameters/Escenario'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FichaSeccion' }
+              example:
+                entidad: 26
+                seccion: 729
+                municipio: 55
+                municipioNombre: "San Luis Río Colorado"
+                distritoFederal: 1
+                tipoSeccion: urbana
+                historial:
+                  - { anio: 2018, tipoEleccion: presidencial, listaNominal: 11331, votosTotales: 3601, participacion: 0.3178, abstencion: 0.6822 }
+                  - { anio: 2021, tipoEleccion: intermedia, listaNominal: 12989, votosTotales: 2783, participacion: 0.2143, abstencion: 0.7857 }
+                  - { anio: 2024, tipoEleccion: presidencial, listaNominal: 15006, votosTotales: 4546, participacion: 0.3029, abstencion: 0.6971 }
+                indicadores:
+                  pobTotal: 19476
+                  pct18a24: 0.2019
+                  pct60yMas: 0.1124
+                  escolaridadProm: 8.6
+                  pctPosbasica: 0.3044
+                  tasaActEcon: 0.6032
+                  pctMigranteReciente: 0.0556
+                  pctVivInternet: 0.5811
+                  indMarginacionMunicipal: 57.1
+                prediccion:
+                  escenario: inercial
+                  eleccionObjetivo: 2027
+                  abstencionPred: 0.7712
+                  p10: 0.7215
+                  p90: 0.8164
+                  nivelRiesgo: MUY_ALTO
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /secciones/{entidad}/{seccion}/explicacion:
+    get:
+      tags: [Secciones]
+      summary: Principales factores (SHAP) de la predicción de la sección
+      parameters:
+        - $ref: '#/components/parameters/EntidadPath'
+        - $ref: '#/components/parameters/SeccionPath'
+        - $ref: '#/components/parameters/Escenario'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Explicacion' }
+              example:
+                entidad: 26
+                seccion: 729
+                valorBase: 0.452
+                abstencionPred: 0.7712
+                factores:
+                  - { variable: abst_lag_mismo_tipo, etiqueta: "Abstención en la última intermedia", valor: 0.7857, contribucion: 0.1810 }
+                  - { variable: tipo_eleccion, etiqueta: "Elección intermedia", valor: 1, contribucion: 0.0640 }
+                  - { variable: pct_posbasica, etiqueta: "Población con educación posbásica", valor: 0.3044, contribucion: 0.0315 }
+                  - { variable: escolaridad_prom, etiqueta: "Escolaridad promedio", valor: 8.6, contribucion: 0.0221 }
+                  - { variable: pct_viv_internet, etiqueta: "Viviendas con internet", valor: 0.5811, contribucion: 0.0126 }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /secciones/{entidad}/{seccion}/colonias:
+    get:
+      tags: [Secciones]
+      summary: Colonias que cubre la sección
+      description: Ordenadas de mayor a menor porcentaje del área de la sección.
+      parameters:
+        - $ref: '#/components/parameters/EntidadPath'
+        - $ref: '#/components/parameters/SeccionPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ColoniaSeccion' }
+              example:
+                - { colonia: "Ejemplo Norte", pctArea: 0.71 }
+                - { colonia: "Ejemplo Sur", pctArea: 0.29 }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /buscar:
+    get:
+      tags: [Búsqueda]
+      summary: Busca colonias, municipios o secciones
+      description: |
+        Búsqueda sin acentos ni mayúsculas. Un número busca la sección; un texto busca colonias
+        y municipios. `bbox` sirve para centrar el mapa.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+        - name: entidad
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 32 }
+        - name: limite
+          in: query
+          schema: { type: integer, default: 10, maximum: 50 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ResultadoBusqueda' }
+              example:
+                - tipo: municipio
+                  etiqueta: "San Luis Río Colorado, Sonora"
+                  entidad: 26
+                  municipio: 55
+                  bbox: [-115.05, 31.95, -113.15, 32.65]
+                - tipo: colonia
+                  etiqueta: "Ejemplo Norte, San Luis Río Colorado"
+                  entidad: 26
+                  municipio: 55
+                  secciones: [729, 730]
+                  bbox: [-114.80, 32.45, -114.76, 32.48]
+        '400': { $ref: '#/components/responses/ErrorValidacion' }
+
+  /modelo:
+    get:
+      tags: [Modelo]
+      summary: Versión activa, métricas contra baseline e importancia de variables
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Modelo' }
+              example:
+                version: "1.0.0"
+                entrenadoEn: "2026-10-21T18:00:00-07:00"
+                eleccionPrueba: 2024
+                seccionesEntrenamiento: 66392
+                metricas: { rmse: 0.041, mae: 0.030, r2: 0.78 }
+                baseline: { descripcion: "Abstención de la última elección del mismo tipo", rmse: 0.052, mae: 0.039, r2: 0.64 }
+                umbrales: { muyAlto: 0.62, alto: 0.55, medio: 0.47 }
+                importancia:
+                  - { variable: abst_lag_mismo_tipo, etiqueta: "Abstención en la última elección del mismo tipo", importancia: 0.41 }
+                  - { variable: tipo_eleccion, etiqueta: "Tipo de elección", importancia: 0.17 }
+
+  /simulaciones:
+    post:
+      x-estado: borrador
+      tags: [Escenarios]
+      summary: Crea y ejecuta un escenario de intervención (Escenario B)
+      description: Si ya existe un escenario con los mismos parámetros, regresa el guardado (cache true).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SimulacionEntrada' }
+            example:
+              nombre: "Casillas +20% en riesgo alto"
+              entidad: 26
+              palancas:
+                reduccionElectoresCasilla: 0.20
+                campanaDigital: { efectoPp: 1.0, cobertura: 0.5 }
+                focalizacion: { niveles: [MUY_ALTO, ALTO], municipios: [55] }
+      responses:
+        '201':
+          description: Escenario creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SimulacionResultado' }
+        '200':
+          description: Escenario ya existente (cache)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SimulacionResultado' }
+        '400': { $ref: '#/components/responses/ErrorValidacion' }
+        '503': { $ref: '#/components/responses/ServicioNoDisponible' }
+
+  /escenarios:
+    get:
+      x-estado: borrador
+      tags: [Escenarios]
+      summary: Escenarios guardados
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/EscenarioResumen' }
+
+  /priorizacion:
+    get:
+      x-estado: borrador
+      tags: [Escenarios]
+      summary: Ranking de secciones por votos recuperables
+      parameters:
+        - name: escenario
+          in: query
+          required: true
+          description: Identificador de un escenario de intervención.
+          schema: { type: integer }
+        - $ref: '#/components/parameters/EntidadQuery'
+        - name: top
+          in: query
+          schema: { type: integer, default: 50, maximum: 500 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Priorizacion' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    EntidadPath:
+      name: entidad
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1, maximum: 32 }
+    EntidadQuery:
+      name: entidad
+      in: query
+      required: true
+      schema: { type: integer, minimum: 1, maximum: 32 }
+    MunicipioPath:
+      name: municipio
+      in: path
+      required: true
+      description: Clave INE del municipio
+      schema: { type: integer, minimum: 1 }
+    SeccionPath:
+      name: seccion
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    Escenario:
+      name: escenario
+      in: query
+      description: "`inercial` o el identificador numérico de un escenario de intervención."
+      schema: { type: string, default: inercial }
+
+  responses:
+    NoAutenticado:
+      description: Falta el token, es inválido o expiró. El frontend redirige a /login.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: UNAUTHORIZED, message: "Sesión no válida o expirada" } }
+    SinPermiso:
+      description: El rol del usuario no permite la operación
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: FORBIDDEN, message: "No tiene permiso para esta operación" } }
+    NoEncontrado:
+      description: No existe el recurso
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: NOT_FOUND, message: "No existe la sección 9999 en la entidad 26" } }
+    ErrorValidacion:
+      description: Parámetros inválidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: VALIDATION_ERROR, message: "Parámetros inválidos", details: [ { campo: entidad, mensaje: "Debe estar entre 1 y 32" } ] } }
+    ServicioNoDisponible:
+      description: El servicio de ML no respondió
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: ML_UNAVAILABLE, message: "El servicio de predicción no está disponible; intente más tarde" } }
+
+  schemas:
+    Rol:
+      type: string
+      enum: [ADMIN, ANALISTA]
+    LoginEntrada:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, format: password }
+    Sesion:
+      type: object
+      required: [token, expiraEn, usuario]
+      properties:
+        token: { type: string }
+        expiraEn: { type: string, format: date-time }
+        usuario: { $ref: '#/components/schemas/Usuario' }
+    Usuario:
+      type: object
+      required: [id, nombre, email, rol]
+      properties:
+        id: { type: integer }
+        nombre: { type: string }
+        email: { type: string, format: email }
+        rol: { $ref: '#/components/schemas/Rol' }
+        activo: { type: boolean }
+        ultimoAcceso: { type: string, format: date-time, nullable: true }
+    UsuarioEntrada:
+      type: object
+      required: [nombre, email, password, rol]
+      properties:
+        nombre: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, format: password }
+        rol: { $ref: '#/components/schemas/Rol' }
+    NivelRiesgo:
+      type: string
+      enum: [MUY_ALTO, ALTO, MEDIO, BAJO]
+    TipoSeccion:
+      type: string
+      enum: [urbana, mixta, rural]
+    Fraccion:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 1
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              type: array
+              items: { type: object }
+    Health:
+      type: object
+      properties:
+        api: { type: string }
+        db: { type: string }
+        mlService: { type: string }
+        modeloVersion: { type: string }
+    Entidad:
+      type: object
+      required: [entidad, nombre]
+      properties:
+        entidad: { type: integer }
+        nombre: { type: string }
+        secciones: { type: integer }
+    Municipio:
+      type: object
+      required: [entidad, municipio, nombre]
+      properties:
+        entidad: { type: integer }
+        municipio: { type: integer, description: Clave INE }
+        municipioInegi: { type: integer, nullable: true, description: Clave INEGI/CONAPO }
+        nombre: { type: string }
+    TopoJSON:
+      type: object
+      description: Topología en formato TopoJSON (https://github.com/topojson/topojson-specification)
+      required: [type, objects, arcs]
+      properties:
+        type: { type: string, enum: [Topology] }
+        objects: { type: object }
+        arcs: { type: array, items: {} }
+        transform: { type: object }
+    Umbrales:
+      type: object
+      description: Límites inferiores de cada nivel (abstención predicha)
+      properties:
+        muyAlto: { $ref: '#/components/schemas/Fraccion' }
+        alto: { $ref: '#/components/schemas/Fraccion' }
+        medio: { $ref: '#/components/schemas/Fraccion' }
+    RiesgoSeccion:
+      type: object
+      required: [entidad, seccion, abstencionPred, nivelRiesgo]
+      properties:
+        entidad: { type: integer }
+        seccion: { type: integer }
+        municipio: { type: integer }
+        tipoSeccion: { $ref: '#/components/schemas/TipoSeccion' }
+        listaNominal: { type: integer }
+        abstencionPred: { $ref: '#/components/schemas/Fraccion' }
+        p10: { $ref: '#/components/schemas/Fraccion' }
+        p90: { $ref: '#/components/schemas/Fraccion' }
+        nivelRiesgo: { $ref: '#/components/schemas/NivelRiesgo' }
+        deltaVsInercial:
+          type: number
+          nullable: true
+          description: Solo en escenarios de intervención; negativo = reduce la abstención
+    RiesgoSecciones:
+      type: object
+      required: [escenario, modeloVersion, secciones]
+      properties:
+        escenario: { type: string }
+        modeloVersion: { type: string }
+        eleccionObjetivo: { type: integer }
+        umbrales: { $ref: '#/components/schemas/Umbrales' }
+        secciones:
+          type: array
+          items: { $ref: '#/components/schemas/RiesgoSeccion' }
+    RiesgoMunicipio:
+      type: object
+      required: [entidad, municipio, abstencionPred, nivelRiesgo]
+      properties:
+        entidad: { type: integer }
+        municipio: { type: integer }
+        nombre: { type: string }
+        secciones: { type: integer }
+        listaNominal: { type: integer }
+        abstencionPred: { $ref: '#/components/schemas/Fraccion' }
+        nivelRiesgo: { $ref: '#/components/schemas/NivelRiesgo' }
+        porNivel:
+          type: object
+          additionalProperties: { type: integer }
+    HistorialEleccion:
+      type: object
+      properties:
+        anio: { type: integer }
+        tipoEleccion: { type: string, enum: [presidencial, intermedia] }
+        listaNominal: { type: integer }
+        votosTotales: { type: integer }
+        participacion: { $ref: '#/components/schemas/Fraccion' }
+        abstencion: { $ref: '#/components/schemas/Fraccion' }
+    FichaSeccion:
+      type: object
+      required: [entidad, seccion, historial, prediccion]
+      properties:
+        entidad: { type: integer }
+        seccion: { type: integer }
+        municipio: { type: integer }
+        municipioNombre: { type: string }
+        distritoFederal: { type: integer }
+        tipoSeccion: { $ref: '#/components/schemas/TipoSeccion' }
+        historial:
+          type: array
+          items: { $ref: '#/components/schemas/HistorialEleccion' }
+        indicadores:
+          type: object
+          description: Variables del Censo 2020 y marginación municipal; pueden faltar (null) por confidencialidad
+          additionalProperties: { type: number, nullable: true }
+        prediccion:
+          type: object
+          properties:
+            escenario: { type: string }
+            eleccionObjetivo: { type: integer }
+            abstencionPred: { $ref: '#/components/schemas/Fraccion' }
+            p10: { $ref: '#/components/schemas/Fraccion' }
+            p90: { $ref: '#/components/schemas/Fraccion' }
+            nivelRiesgo: { $ref: '#/components/schemas/NivelRiesgo' }
+    Explicacion:
+      type: object
+      properties:
+        entidad: { type: integer }
+        seccion: { type: integer }
+        valorBase: { type: number, description: Predicción promedio del modelo (punto de partida de SHAP) }
+        abstencionPred: { $ref: '#/components/schemas/Fraccion' }
+        factores:
+          type: array
+          maxItems: 5
+          items:
+            type: object
+            properties:
+              variable: { type: string }
+              etiqueta: { type: string }
+              valor: { type: number }
+              contribucion: { type: number, description: Positivo = sube la abstención }
+    ColoniaSeccion:
+      type: object
+      properties:
+        colonia: { type: string }
+        pctArea: { $ref: '#/components/schemas/Fraccion' }
+    ResultadoBusqueda:
+      type: object
+      required: [tipo, etiqueta, entidad]
+      properties:
+        tipo: { type: string, enum: [colonia, municipio, seccion] }
+        etiqueta: { type: string }
+        entidad: { type: integer }
+        municipio: { type: integer }
+        seccion: { type: integer }
+        secciones:
+          type: array
+          items: { type: integer }
+        bbox:
+          type: array
+          description: "[oeste, sur, este, norte] en WGS84"
+          minItems: 4
+          maxItems: 4
+          items: { type: number }
+    Modelo:
+      type: object
+      properties:
+        version: { type: string }
+        entrenadoEn: { type: string, format: date-time }
+        eleccionPrueba: { type: integer }
+        seccionesEntrenamiento: { type: integer }
+        metricas: { $ref: '#/components/schemas/Metricas' }
+        baseline:
+          allOf:
+            - $ref: '#/components/schemas/Metricas'
+            - type: object
+              properties:
+                descripcion: { type: string }
+        umbrales: { $ref: '#/components/schemas/Umbrales' }
+        importancia:
+          type: array
+          items:
+            type: object
+            properties:
+              variable: { type: string }
+              etiqueta: { type: string }
+              importancia: { type: number }
+    Metricas:
+      type: object
+      properties:
+        rmse: { type: number }
+        mae: { type: number }
+        r2: { type: number }
+    SimulacionEntrada:
+      type: object
+      required: [entidad, palancas]
+      properties:
+        nombre: { type: string }
+        entidad: { type: integer, minimum: 1, maximum: 32 }
+        palancas:
+          type: object
+          properties:
+            reduccionElectoresCasilla: { type: number, minimum: 0, maximum: 0.5 }
+            distMacMaxKm: { type: number, minimum: 0, nullable: true }
+            campanaDigital:
+              type: object
+              properties:
+                efectoPp: { type: number, minimum: 0, maximum: 5, description: Supuesto en puntos porcentuales }
+                cobertura: { $ref: '#/components/schemas/Fraccion' }
+            focalizacion:
+              type: object
+              properties:
+                niveles:
+                  type: array
+                  items: { $ref: '#/components/schemas/NivelRiesgo' }
+                municipios:
+                  type: array
+                  items: { type: integer }
+    SimulacionResultado:
+      type: object
+      properties:
+        escenarioId: { type: integer }
+        modeloVersion: { type: string }
+        cache: { type: boolean }
+        resumen:
+          type: object
+          properties:
+            seccionesAfectadas: { type: integer }
+            abstencionPromedio:
+              type: object
+              properties:
+                A: { type: number }
+                B: { type: number }
+            porNivel:
+              type: object
+              properties:
+                A: { type: object, additionalProperties: { type: integer } }
+                B: { type: object, additionalProperties: { type: integer } }
+            votosRecuperables: { type: integer }
+    EscenarioResumen:
+      type: object
+      properties:
+        creadoPor: { type: string, description: Nombre del usuario que creó el escenario }
+        escenarioId: { type: integer }
+        nombre: { type: string }
+        entidad: { type: integer }
+        creadoEn: { type: string, format: date-time }
+        votosRecuperables: { type: integer }
+    Priorizacion:
+      type: object
+      properties:
+        entidad: { type: integer }
+        seccion: { type: integer }
+        municipio: { type: integer }
+        listaNominal: { type: integer }
+        abstencionA: { $ref: '#/components/schemas/Fraccion' }
+        abstencionB: { $ref: '#/components/schemas/Fraccion' }
+        votosRecuperables: { type: integer }
+        nivelRiesgoA: { $ref: '#/components/schemas/NivelRiesgo' }
