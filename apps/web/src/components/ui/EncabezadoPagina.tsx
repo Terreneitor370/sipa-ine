@@ -4,11 +4,14 @@ import type { ReactNode } from "react";
 export function EncabezadoPagina({
   migas,
   titulo,
+  descripcion,
   badge,
   accion,
 }: {
   migas: string[];
   titulo?: string;
+  /** Subtítulo con guía de uso (qué hace el usuario en esta pantalla). */
+  descripcion?: string;
   badge?: string;
   accion?: ReactNode;
 }) {
@@ -24,6 +27,7 @@ export function EncabezadoPagina({
           ))}
         </nav>
         {titulo && <h1 className="text-[16px] font-semibold text-ink">{titulo}</h1>}
+        {descripcion && <p className="mt-0.5 truncate text-[12px] text-ink-2">{descripcion}</p>}
       </div>
       <div className="flex items-center gap-2">
         {accion}

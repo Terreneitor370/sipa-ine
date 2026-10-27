@@ -16,6 +16,7 @@ export function ModeloPage() {
       <EncabezadoPagina
         migas={["SIPA-INE", "Modelo"]}
         titulo="Especificación y validación del modelo"
+        descripcion="Qué tan confiable es la predicción y de dónde salen los números: métricas, variables y limitaciones."
         badge={`v${data.version} · PRODUCCIÓN`}
         accion={<span className="text-[10px] text-ink-2">{data.algoritmo}</span>}
       />

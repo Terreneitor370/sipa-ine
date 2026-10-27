@@ -4,7 +4,6 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Select } from "../components/ui/Select";
 import { EncabezadoPagina } from "../components/ui/EncabezadoPagina";
-import { IconoFiltro } from "../components/ui/Icons";
 import { LevelDistribution } from "../components/charts/LevelDistribution";
 import { Legend } from "../components/map/Legend";
 import { RiskMap } from "../components/map/RiskMap";
@@ -121,18 +120,31 @@ export function MapaPage() {
     setFiltros(next);
   };
 
-  const cambiar = (parcial: Partial<Filtros>) => setBorrador((b) => ({ ...b, ...parcial }));
-  const aplicar = () =>
+  const cambiar = (parcial: Partial<Filtros>) => {
+    const next = { ...borrador, ...parcial };
+    if (parcial.entidad) {
+      next.municipio = TODOS;
+      next.distrito = TODOS;
+    }
+    setBorrador(next);
+    // Aplicado en vivo: el mapa responde al instante (sin botón intermedio)
     setFiltros({
-      ...borrador,
-      municipio: borrador.entidad === VISTA_NACIONAL ? TODOS : borrador.municipio,
-      distrito: borrador.entidad === VISTA_NACIONAL ? TODOS : borrador.distrito,
+      ...next,
+      municipio: next.entidad === VISTA_NACIONAL ? TODOS : next.municipio,
+      distrito: next.entidad === VISTA_NACIONAL ? TODOS : next.distrito,
     });
+  };
+  const limpiar = () => {
+    setBorrador(INICIAL);
+    setFiltros(INICIAL);
+  };
 
   return (
     <div className="flex h-full flex-col">
       <EncabezadoPagina
         migas={["SIPA-INE", "Mapa de Riesgo"]}
+        titulo="Mapa de riesgo de abstención 2027"
+        descripcion="Toca un estado con datos para bajar a sus secciones · filtra, busca una colonia o pulsa una sección para ver su ficha."
         badge="Entorno federal 2027"
       />
 
@@ -190,9 +202,8 @@ export function MapaPage() {
             opciones={[{ valor: "inercial", texto: "Inercial 2027" }]}
           />
         </div>
-        <Button className="ml-auto" onClick={aplicar}>
-          <IconoFiltro />
-          Aplicar
+        <Button className="ml-auto" variante="secundario" onClick={limpiar}>
+          Limpiar
         </Button>
       </div>
 

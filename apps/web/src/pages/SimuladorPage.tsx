@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { KpiCard } from "../components/ui/KpiCard";
@@ -33,6 +33,15 @@ export function SimuladorPage() {
     );
   };
 
+  /** Primera simulación automática al entrar y recálculo al mover palancas. */
+  const tempo = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => {
+    clearTimeout(tempo.current);
+    tempo.current = setTimeout(ejecutar, 400);
+    return () => clearTimeout(tempo.current);
+    // nombre no dispara recalculo
+  }, [palancas]);
+
   const deltaAbstencion = resultado
     ? (resultado.resumen.abstencionPromedio.B - resultado.resumen.abstencionPromedio.A) * 100
     : 0;
@@ -41,18 +50,19 @@ export function SimuladorPage() {
     <div className="flex h-full flex-col">
       <EncabezadoPagina
         migas={["SIPA-INE", "Simulador"]}
-        titulo="Simulador de Escenarios"
-        badge="ESCENARIOS · SONORA"
+        titulo="Simulador de escenarios"
+        descripcion="Mueve las palancas de intervención y compara qué pasa: escenario A (inercial) vs B (intervención)."
+        badge="Escenario · Sonora"
         accion={<span className="text-[10px] text-ink-2">Comparación A (inercial) vs B (intervención)</span>}
       />
 
       <div className="flex-1 overflow-auto bg-fondo p-3">
         <div className="grid gap-3 lg:grid-cols-[2fr_3fr]">
           <Card
-            titulo="Palancas de intervención"
+            titulo="Palancas de intervención (lo que el INE controla)"
             accion={
               <Button onClick={ejecutar} disabled={isPending}>
-                {isPending ? "Calculando…" : "Ejecutar simulación"}
+                {isPending ? "Calculando…" : "Recalcular"}
               </Button>
             }
           >
@@ -99,7 +109,7 @@ export function SimuladorPage() {
                 />
               ) : (
                 <p className="py-4 text-center text-[12px] text-ink-2">
-                  Ejecuta la simulación para comparar el escenario A contra el B.
+                  Calculando la comparación A vs B…
                 </p>
               )}
             </Card>

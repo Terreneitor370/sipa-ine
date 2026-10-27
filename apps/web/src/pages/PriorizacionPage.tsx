@@ -68,6 +68,7 @@ export function PriorizacionPage() {
       <EncabezadoPagina
         migas={["SIPA-INE", "Priorización"]}
         titulo="Matriz de priorización de intervenciones"
+        descripcion="Secciones ordenadas por los votos que el modelo estima recuperar: arriba, dónde intervenir primero."
         badge={`ESCENARIO ${ESCENARIO_ID} · SONORA`}
       />
 
