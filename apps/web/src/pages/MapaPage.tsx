@@ -4,6 +4,7 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Select } from "../components/ui/Select";
 import { EncabezadoPagina } from "../components/ui/EncabezadoPagina";
+import { TourGuiado } from "../components/ui/TourGuiado";
 import { LevelDistribution } from "../components/charts/LevelDistribution";
 import { Legend } from "../components/map/Legend";
 import { RiskMap } from "../components/map/RiskMap";
@@ -114,8 +115,13 @@ export function MapaPage() {
     return { entidades: entidades.length, totalSecciones, ponderada, porNivel };
   }, [entidadesVisibles]);
 
-  const irAEntidad = (clave: string) => {
-    const next = { ...borrador, entidad: clave, municipio: TODOS, distrito: TODOS };
+  const seccionesPorEntidad = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const e of riesgoNacional.data?.entidades ?? []) m.set(e.clave, e.secciones);
+    return m;
+  }, [riesgoNacional.data]);
+
+  const irAEntidad = (clave: string) => {    const next = { ...borrador, entidad: clave, municipio: TODOS, distrito: TODOS };
     setBorrador(next);
     setFiltros(next);
   };
@@ -148,7 +154,10 @@ export function MapaPage() {
         badge="Entorno federal 2027"
       />
 
-      <div className="flex flex-wrap items-end gap-3 border-b border-linea bg-white px-3 py-2">
+      <div
+        className="flex flex-wrap items-end gap-3 border-b border-linea bg-white px-3 py-2"
+        data-tour="filtros"
+      >
         <div className="w-40">
           <Select
             etiqueta="Entidad"
@@ -225,13 +234,18 @@ export function MapaPage() {
         <span>FUENTE: cómputos INE 2018–2024</span>
       </div>
 
-      <div className="flex min-h-0 flex-1 divide-x divide-linea">
-        <div className="relative w-[70%] bg-white">
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row md:divide-x md:divide-linea">
+        <div
+          className="relative h-[45vh] w-full shrink-0 bg-white md:h-auto md:w-[70%]"
+          data-tour="mapa"
+        >
           {esNacional ? (
             <MexicoStatesMap
               entidadesConDatos={entidadesConDatos}
               conSecciones={new Set(["26"])}
               abstencionPromedioPorEntidad={abstencionPorEntidad}
+              seccionesPorEntidad={seccionesPorEntidad}
+              umbrales={umbrales}
               onSeleccionEntidad={(clave) => irAEntidad(clave)}
             />
           ) : claveEntidadDatos === "26" && geo.data && filtrado ? (
@@ -250,7 +264,10 @@ export function MapaPage() {
           )}
         </div>
 
-        <div className="w-[30%] space-y-3 overflow-auto bg-fondo p-3">
+        <div
+          className="w-full space-y-3 overflow-auto bg-fondo p-3 md:w-[30%]"
+          data-tour="panel"
+        >
           <Card
             titulo="Resumen"
             accion={
@@ -352,6 +369,37 @@ export function MapaPage() {
           </Card>
         </div>
       </div>
+
+      <TourGuiado
+        pasos={[
+          {
+            sel: '[data-tour="filtros"]',
+            titulo: "Filtros que responden al instante",
+            texto:
+              "Cambia entidad, municipio, distrito o nivel de riesgo: el mapa y las cifras se actualizan solos. Usa Limpiar para regresar todo.",
+          },
+          {
+            sel: '[data-tour="mapa"]',
+            titulo: "Mapa navegable de México",
+            texto:
+              "Toca un estado con color para ver sus secciones electorales (Sonora en esta demo). Selecciona una sección para abrir su ficha con predicción e histórico.",
+          },
+          {
+            sel: '[data-tour="panel"]',
+            titulo: "Análisis a la derecha",
+            texto:
+              "Resumen del entorno, distribución por nivel de riesgo, leyenda con los umbrales fijos del modelo y convergencia.",
+          },
+          {
+            sel: 'a[href="/simulador"]',
+            titulo: "Simula una intervención",
+            texto:
+              "En el Simulador mueves las palancas que el INE controla (casillas, módulos MAC, campaña digital) y comparas el escenario A contra el B.",
+            cta: "Ir al simulador",
+            ctaRuta: "/simulador",
+          },
+        ]}
+      />
     </div>
   );
 }

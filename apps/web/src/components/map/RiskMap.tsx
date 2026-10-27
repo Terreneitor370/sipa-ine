@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { GeoJSON, MapContainer, ScaleControl, TileLayer, useMapEvents } from "react-leaflet";
 import { OsmAttribution } from "./OsmAttribution";
+import { LeyendaFlotante } from "./LeyendaFlotante";
 
 const OSM_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 const OSM_ATTRIBUTION =
@@ -66,6 +67,7 @@ export function RiskMap({
       <TileLayer url={OSM_URL} attribution={OSM_ATTRIBUTION} />
       <ScaleControl position="bottomleft" imperial={false} />
       <OsmAttribution />
+      <LeyendaFlotante umbrales={riesgo?.umbrales} />
       <Coordenadas />
       <GeoJSON
         data={geo as unknown as GeoJSON.FeatureCollection}
