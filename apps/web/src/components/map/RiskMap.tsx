@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { GeoJSON, MapContainer, ScaleControl, useMapEvents } from "react-leaflet";
+import { GeoJSON, MapContainer, ScaleControl, TileLayer, useMapEvents } from "react-leaflet";
+import { OsmAttribution } from "./OsmAttribution";
+
+const OSM_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const OSM_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 import type { Layer, PathOptions } from "leaflet";
 import type { FeatureCollectionGeo, RiesgoRespuesta } from "../../types/api";
 import { estiloPoligono } from "../../lib/riesgo";
@@ -54,10 +59,13 @@ export function RiskMap({
       zoom={zoom}
       preferCanvas
       scrollWheelZoom
+      attributionControl={false}
       className="h-full w-full"
       data-testid="risk-map"
     >
+      <TileLayer url={OSM_URL} attribution={OSM_ATTRIBUTION} />
       <ScaleControl position="bottomleft" imperial={false} />
+      <OsmAttribution />
       <Coordenadas />
       <GeoJSON
         data={geo as unknown as GeoJSON.FeatureCollection}

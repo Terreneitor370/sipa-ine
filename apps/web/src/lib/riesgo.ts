@@ -60,6 +60,6 @@ export function estiloPoligono(nivel: NivelRiesgo): {
     fillColor: COLOR_NIVEL[nivel],
     weight: 1,
     color: "#ffffff",
-    fillOpacity: nivel === "MEDIO" ? 0.9 : 0.8,
+    fillOpacity: 0.6,
   };
 }

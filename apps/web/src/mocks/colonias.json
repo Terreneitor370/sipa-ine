@@ -1,0 +1,52 @@
+[
+  {
+    "colonia": "Pueblo Nuevo",
+    "municipio": "San Luis Río Colorado",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 1234,
+    "claveSeccion": "0432",
+    "lat": 32.475,
+    "lon": -114.762
+  },
+  {
+    "colonia": "Centro",
+    "municipio": "Nogales",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 1234,
+    "claveSeccion": "0432",
+    "lat": 31.308,
+    "lon": -110.942
+  },
+  {
+    "colonia": "Centro",
+    "municipio": "Hermosillo",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 1234,
+    "claveSeccion": "1234",
+    "lat": 29.089,
+    "lon": -110.957
+  },
+  {
+    "colonia": "Pitic",
+    "municipio": "Hermosillo",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 1234,
+    "claveSeccion": "1234",
+    "lat": 29.102,
+    "lon": -110.978
+  },
+  {
+    "colonia": "San Benito",
+    "municipio": "Obregón",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 1234,
+    "claveSeccion": "0410",
+    "lat": 27.486,
+    "lon": -109.942
+  }
+]

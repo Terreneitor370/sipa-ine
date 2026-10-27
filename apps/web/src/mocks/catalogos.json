@@ -1,5 +1,8 @@
 {
-  "entidades": [{ "clave": "26", "nombre": "Sonora" }],
+  "entidades": [
+    { "clave": "00", "nombre": "México (vista nacional)" },
+    { "clave": "26", "nombre": "Sonora" }
+  ],
   "municipios": [
     "Agua Prieta",
     "Cajeme",

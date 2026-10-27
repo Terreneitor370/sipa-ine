@@ -8,11 +8,14 @@ import { IconoFiltro } from "../components/ui/Icons";
 import { LevelDistribution } from "../components/charts/LevelDistribution";
 import { Legend } from "../components/map/Legend";
 import { RiskMap } from "../components/map/RiskMap";
-import { useEntidades, useGeo, useMunicipios, useRiesgo } from "../hooks/useSipa";
+import { MexicoStatesMap } from "../components/map/MexicoStatesMap";
+import { ColoniaSearch } from "../components/map/ColoniaSearch";
+import { useEntidades, useGeo, useModelo, useMunicipios, useRiesgo } from "../hooks/useSipa";
 import { abstencionPromedio, contarPorNivel } from "../lib/riesgo";
 import { formatEntero, formatPct } from "../lib/format";
 
 const TODOS = "__todos__";
+const VISTA_NACIONAL = "00";
 
 interface Filtros {
   entidad: string;
@@ -23,7 +26,7 @@ interface Filtros {
 }
 
 const INICIAL: Filtros = {
-  entidad: "26",
+  entidad: VISTA_NACIONAL,
   municipio: TODOS,
   distrito: TODOS,
   nivel: TODOS,
@@ -36,9 +39,12 @@ export function MapaPage() {
   const [filtros, setFiltros] = useState<Filtros>(INICIAL);
 
   const entidades = useEntidades();
-  const municipios = useMunicipios(filtros.entidad);
-  const geo = useGeo(filtros.entidad);
-  const riesgo = useRiesgo({ entidad: filtros.entidad });
+  const esNacional = filtros.entidad === VISTA_NACIONAL;
+  const claveEntidadDatos = esNacional ? "26" : filtros.entidad;
+  const municipios = useMunicipios(claveEntidadDatos);
+  const geo = useGeo(claveEntidadDatos, !esNacional);
+  const riesgo = useRiesgo({ entidad: claveEntidadDatos });
+  const modelo = useModelo();
 
   const todos = useMemo(() => riesgo.data?.secciones ?? [], [riesgo.data]);
 
@@ -71,10 +77,30 @@ export function MapaPage() {
 
   const filtrado = riesgo.data ? { ...riesgo.data, secciones: visibles } : undefined;
   const porNivel = contarPorNivel(visibles);
-  const nombreEntidad = entidades.data?.find((e) => e.clave === filtros.entidad)?.nombre ?? "Sonora";
+  const nombreEntidad =
+    entidades.data?.find((e) => e.clave === filtros.entidad)?.nombre ?? "México";
+
+  const entidadesConDatos = useMemo(() => new Set(["26"]), []);
+  const abstencionPorEntidad = useMemo(() => {
+    const m = new Map<string, number>();
+    if (riesgo.data?.secciones.length) {
+      m.set("26", abstencionPromedio(riesgo.data.secciones));
+    }
+    return m;
+  }, [riesgo.data]);
+
+  const irAEntidad = (clave: string) => {
+    const next = { ...borrador, entidad: clave, municipio: TODOS, distrito: TODOS };
+    setBorrador(next);
+    setFiltros(next);
+  };
 
   const cambiar = (parcial: Partial<Filtros>) => setBorrador((b) => ({ ...b, ...parcial }));
-  const aplicar = () => setFiltros({ ...borrador, municipio: borrador.municipio });
+  const aplicar = () =>
+    setFiltros({
+      ...borrador,
+      municipio: borrador.entidad === VISTA_NACIONAL ? TODOS : borrador.municipio,
+    });
 
   return (
     <div className="flex h-full flex-col">
@@ -95,10 +121,12 @@ export function MapaPage() {
             }))}
           />
         </div>
+        <ColoniaSearch entidadClave={borrador.entidad === VISTA_NACIONAL ? "26" : borrador.entidad} />
         <div className="w-44">
           <Select
             etiqueta="Municipio"
             value={borrador.municipio}
+            disabled={borrador.entidad === VISTA_NACIONAL}
             onChange={(e) => cambiar({ municipio: e.target.value })}
             opciones={opcionesMunicipios}
           />
@@ -145,19 +173,34 @@ export function MapaPage() {
         <span className="text-linea">|</span>
         <span>CAPA: polígonos de sección electoral</span>
         <span className="text-linea">|</span>
-        <span>{nombreEntidad.toUpperCase()}: {municipios.data?.length ?? "—"} municipios</span>
+        <span>
+          {esNacional
+            ? "MÉXICO: 32 entidades"
+            : `${nombreEntidad.toUpperCase()}: ${municipios.data?.length ?? "—"} municipios`}
+        </span>
         <span className="text-linea">|</span>
-        <span>&#9632; GEOMETRÍA: muestrario sintético (mocks)</span>
+        <span>&#9632; BASE: OpenStreetMap + contornos estatales</span>
+        <span className="text-linea">|</span>
+        <span>SECCIONES: cartografía de demo (Sonora)</span>
         <span className="text-linea">|</span>
         <span>FUENTE: cómputos INE 2018–2024</span>
       </div>
 
       <div className="flex min-h-0 flex-1 divide-x divide-linea">
-        <div className="w-[70%] bg-white">
-          {geo.data && filtrado ? (
+        <div className="relative w-[70%] bg-white">
+          {esNacional ? (
+            <MexicoStatesMap
+              entidadesConDatos={entidadesConDatos}
+              abstencionPromedioPorEntidad={abstencionPorEntidad}
+              entidadResaltada="26"
+              onSeleccionEntidad={(clave) => irAEntidad(clave)}
+            />
+          ) : geo.data && filtrado ? (
             <RiskMap
               geo={geo.data}
               riesgo={filtrado}
+              centro={[29.0, -110.9]}
+              zoom={7}
               onSeleccion={(id) => navigate(`/seccion/${id}`)}
             />
           ) : (
@@ -207,14 +250,28 @@ export function MapaPage() {
             titulo="Convergencia del modelo"
             accion={
               <span className="rounded-sm border border-linea px-1.5 py-0.5 text-[10px] text-ink-2">
-                PENDIENTE
+                {modelo.data ? "OK" : "…"}
               </span>
             }
           >
-            <p className="text-[12px] text-ink-2">
-              El informe de convergencia (RMSE serial, iteraciones, R² ajustado) se mostrará cuando
-              la API exponga la métrica del modelo activo. Este panel no usa valores de ejemplo.
-            </p>
+            {modelo.data ? (
+              <>
+                <p className="text-[12px] text-ink-2">
+                  RMSE (validación OOT 2024):{" "}
+                  {modelo.data.metricas.find((m) => m.nombre.includes("RMSE"))?.modelo ?? "—"} pp.
+                  Modelo {modelo.data.version} · {modelo.data.algoritmo}.
+                </p>
+                <div className="mt-2 flex gap-4 text-[11px] text-ink-2">
+                  <span>
+                    R²:{" "}
+                    {modelo.data.metricas.find((m) => m.nombre.startsWith("R²"))?.modelo ?? "—"}
+                  </span>
+                  <span>Entrenamiento: {modelo.data.entrenamiento}</span>
+                </div>
+              </>
+            ) : (
+              <p className="text-[12px] text-ink-2">Cargando métricas del modelo…</p>
+            )}
           </Card>
         </div>
       </div>
