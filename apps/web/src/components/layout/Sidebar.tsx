@@ -12,7 +12,7 @@ export function Sidebar() {
   return (
     <aside className="flex w-[220px] shrink-0 flex-col bg-panel text-white">
       <div className="border-b border-white/10 px-4 py-3">
-        <p className="text-[15px] font-bold tracking-tight">SIPA-INE</p>
+        <p className="text-[15px] font-bold tracking-tight text-white">SIPA-INE</p>
         <p className="text-[10px] uppercase tracking-wide text-white/60">
           Abstencionismo · Escenarios
         </p>

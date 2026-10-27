@@ -10,12 +10,19 @@ export default {
           medio: "#FDDBC7",
           bajo: "#67A9CF",
         },
+        /** Identidad INE: rosa mexicano, vino, azul marino (manual institucional) */
         acento: {
-          DEFAULT: "#0F4C81",
-          claro: "#1B6CA8",
-          tenue: "#EAF1F7",
+          DEFAULT: "#d5007f",
+          claro: "#e8339a",
+          tenue: "#fde8f4",
         },
-        panel: "#1F2937",
+        ine: {
+          rosa: "#d5007f",
+          vino: "#950054",
+          marino: "#1a2a4a",
+          gris: "#b2b2b2",
+        },
+        panel: "#950054",
         fondo: "#FAFAFA",
         ink: "#111827",
         "ink-2": "#6B7280",

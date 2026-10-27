@@ -17,8 +17,42 @@ import seccionMock from "../mocks/seccion-1234.json";
 import simulacionMock from "../mocks/simulacion.json";
 import priorizacionMock from "../mocks/priorizacion.json";
 import modeloMock from "../mocks/modelo.json";
+import coloniasMock from "../mocks/colonias.json";
 
 const espera = (ms = 250) => new Promise((r) => setTimeout(r, ms));
+
+export interface ColoniaResultado {
+  colonia: string;
+  municipio: string;
+  entidad: string;
+  entidadClave: string;
+  seccionId: number;
+  claveSeccion: string;
+  lat: number;
+  lon: number;
+}
+
+export async function buscarColonias(
+  consulta: string,
+  entidadClave?: string,
+): Promise<ColoniaResultado[]> {
+  const q = consulta.trim().toLowerCase();
+  if (q.length < 2) return [];
+
+  if (USAR_MOCKS) {
+    await espera(80);
+    const lista = coloniasMock as ColoniaResultado[];
+    return lista.filter((c) => {
+      if (entidadClave && entidadClave !== "00" && c.entidadClave !== entidadClave) return false;
+      const hay = `${c.colonia} ${c.municipio} ${c.entidad}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  const { data } = await http.get<ColoniaResultado[]>("/buscar", {
+    params: { q: consulta, entidad: entidadClave },
+  });
+  return data;
+}
 
 export async function obtenerRiesgo(filtros: {
   entidad: string;

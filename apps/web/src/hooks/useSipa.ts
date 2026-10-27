@@ -40,10 +40,11 @@ export function useMunicipios(entidad: string) {
   });
 }
 
-export function useGeo(entidad: string) {
+export function useGeo(entidad: string, enabled = true) {
   return useQuery<FeatureCollectionGeo>({
     queryKey: ["geo", entidad],
     queryFn: () => api.obtenerGeo(entidad),
+    enabled: Boolean(entidad) && enabled,
     staleTime: 7 * 24 * 60 * 60 * 1000,
   });
 }
