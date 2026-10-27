@@ -85,21 +85,27 @@ export function MapaPage() {
     () => new Set((riesgoNacional.data?.entidades ?? []).map((e) => e.clave)),
     [riesgoNacional.data],
   );
+  /** Entidades que cumplen el filtro de nivel aplicado (vista nacional) */
+  const entidadesVisibles = useMemo(() => {
+    const lista = riesgoNacional.data?.entidades ?? [];
+    if (filtros.nivel === TODOS) return lista;
+    return lista.filter((e) => nivelDesdeAbstencion(e.abstencionPredicha) === filtros.nivel);
+  }, [riesgoNacional.data, filtros.nivel]);
   const abstencionPorEntidad = useMemo(() => {
     const m = new Map<string, number>();
-    for (const e of riesgoNacional.data?.entidades ?? []) {
+    for (const e of entidadesVisibles) {
       m.set(e.clave, e.abstencionPredicha);
     }
     if (!esNacional && riesgo.data?.secciones.length) {
       m.set(claveEntidadDatos, abstencionPromedio(riesgo.data.secciones));
     }
     return m;
-  }, [riesgoNacional.data, riesgo.data, esNacional, claveEntidadDatos]);
+  }, [entidadesVisibles, riesgo.data, esNacional, claveEntidadDatos]);
   const umbrales =
     (esNacional ? riesgoNacional.data?.umbrales : riesgo.data?.umbrales) ?? undefined;
   const resumenNacional = useMemo(() => {
-    const entidades = riesgoNacional.data?.entidades ?? [];
-    if (entidades.length === 0) return undefined;
+    if (entidadesVisibles.length === 0) return undefined;
+    const entidades = entidadesVisibles;
     const totalSecciones = entidades.reduce((acc, e) => acc + e.secciones, 0);
     const ponderada =
       entidades.reduce((acc, e) => acc + e.abstencionPredicha * e.secciones, 0) / totalSecciones;
@@ -107,7 +113,7 @@ export function MapaPage() {
       entidades.map((e) => ({ nivel: nivelDesdeAbstencion(e.abstencionPredicha) })) as never,
     );
     return { entidades: entidades.length, totalSecciones, ponderada, porNivel };
-  }, [riesgoNacional.data]);
+  }, [entidadesVisibles]);
 
   const irAEntidad = (clave: string) => {
     const next = { ...borrador, entidad: clave, municipio: TODOS, distrito: TODOS };
@@ -120,6 +126,7 @@ export function MapaPage() {
     setFiltros({
       ...borrador,
       municipio: borrador.entidad === VISTA_NACIONAL ? TODOS : borrador.municipio,
+      distrito: borrador.entidad === VISTA_NACIONAL ? TODOS : borrador.distrito,
     });
 
   return (
@@ -155,6 +162,7 @@ export function MapaPage() {
           <Select
             etiqueta="Distrito"
             value={borrador.distrito}
+            disabled={borrador.entidad === VISTA_NACIONAL}
             onChange={(e) => cambiar({ distrito: e.target.value })}
             opciones={opcionesDistritos}
           />
@@ -195,7 +203,7 @@ export function MapaPage() {
         <span className="text-linea">|</span>
         <span>
           {esNacional
-            ? "MÉXICO: 32 entidades"
+            ? `MÉXICO: ${resumenNacional?.entidades ?? "—"} de 32 entidades (filtro de nivel)`
             : `${nombreEntidad.toUpperCase()}: ${municipios.data?.length ?? "—"} municipios`}
         </span>
         <span className="text-linea">|</span>

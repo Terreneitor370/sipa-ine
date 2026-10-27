@@ -87,15 +87,24 @@ export function MexicoStatesMap({
         style={(feature): PathOptions => {
           const clave = claveEntidadDesdeFeature(feature?.properties as Record<string, unknown>);
           const tieneDatos = clave != null && entidadesConDatos.has(clave);
+          const abst = clave != null ? abstencionPromedioPorEntidad.get(clave) : undefined;
           const resaltada = clave != null && clave === entidadResaltada;
-          if (tieneDatos && clave) {
-            const abst = abstencionPromedioPorEntidad.get(clave) ?? 0.5;
+          if (tieneDatos && clave && abst != null) {
             const nivel = nivelDesdeAbstencion(abst);
             return {
               fillColor: COLOR_NIVEL[nivel],
               fillOpacity: 0.6,
               weight: resaltada ? 2 : 1,
               color: resaltada ? "#d5007f" : "#ffffff",
+            };
+          }
+          if (tieneDatos) {
+            // Cumple datos pero quedó fuera del filtro de nivel aplicado
+            return {
+              fillColor: "#f3f4f6",
+              fillOpacity: 0.3,
+              weight: 0.8,
+              color: "#e5e7eb",
             };
           }
           return {
@@ -113,6 +122,7 @@ export function MexicoStatesMap({
           const navegable = clave != null && (conSecciones?.has(clave) ?? false);
           const abst = clave != null ? abstencionPromedioPorEntidad.get(clave) : undefined;
           const nivel = abst != null ? nivelDesdeAbstencion(abst) : null;
+          const fueraDelFiltro = tieneDatos && abst == null;
           const html =
             `<div style="font-size:11px;line-height:1.45">` +
             `<b>${nombre}</b><br/>` +
@@ -123,10 +133,12 @@ export function MexicoStatesMap({
                 (navegable
                   ? `<span>Secciones con cartografía de demo · clic para detalle</span>`
                   : `<span style="color:#6B7280">Cartografía de secciones pendiente en la demo</span>`)
-              : `<span style="color:#6B7280">Sin predicciones en este entorno de demo</span>`) +
+              : fueraDelFiltro
+                ? `<span style="color:#6B7280">Fuera del filtro de nivel aplicado</span>`
+                : `<span style="color:#6B7280">Sin predicciones en este entorno de demo</span>`) +
             `</div>`;
           layer.bindTooltip(html, { sticky: true });
-          if (navegable && clave) {
+          if (navegable && clave && !fueraDelFiltro) {
             layer.on("click", () => onSeleccionEntidad?.(clave, nombre));
             (layer as Path).on("mouseover", function (this: Path) {
               this.setStyle({ weight: 2, color: "#d5007f" });
