@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Entidad,
   FeatureCollectionGeo,
@@ -69,8 +69,11 @@ export function useSeccion(id: string, entidad = "26") {
 }
 
 export function useSimulacion() {
+  const cliente = useQueryClient();
   return useMutation({
     mutationFn: (req: SimulacionRequest) => api.crearSimulacion(req),
+    // Un escenario nuevo aparece en Priorización sin recargar
+    onSuccess: () => cliente.invalidateQueries({ queryKey: ["escenarios"] }),
   });
 }
 
@@ -78,6 +81,7 @@ export function usePriorizacion(escenarioId: number) {
   return useQuery<PriorizacionRespuesta>({
     queryKey: ["priorizacion", escenarioId],
     queryFn: () => api.obtenerPriorizacion(escenarioId),
+    enabled: escenarioId > 0,
     staleTime: 5 * 60 * 1000,
   });
 }

@@ -200,7 +200,11 @@ export async function obtenerRiesgoNacional(): Promise<RiesgoNacionalRespuesta> 
           params: { entidad: Number(e.clave), escenario: "inercial" },
         });
         const r = adaptarRiesgoSecciones(data);
-        return { clave: e.clave, promedio: r.abstencionPromedio, niveles: r.porNivel };
+        const ln = r.secciones.reduce((a, s) => a + s.listaNominal, 0);
+        const ponderado = ln
+          ? r.secciones.reduce((a, s) => a + s.abstencionPredicha * s.listaNominal, 0) / ln
+          : r.abstencionPromedio;
+        return { clave: e.clave, promedio: ponderado, ln, niveles: r.porNivel, umbrales: data.umbrales };
       }),
   );
   const entidades = catalogo
@@ -214,11 +218,12 @@ export async function obtenerRiesgoNacional(): Promise<RiesgoNacionalRespuesta> 
         abstencionPredicha: r?.promedio ?? 0,
       };
     });
+  const lnTotal = respuestas.reduce((a, r) => a + r.ln, 0);
   return {
     escenario: "inercial" as "inercial",
     totalSecciones: entidades.reduce((a, e) => a + e.secciones, 0),
-    abstencionPromedio: 0,
-    umbrales: adaptarUmbrales(undefined),
+    abstencionPromedio: lnTotal ? respuestas.reduce((a, r) => a + r.promedio * r.ln, 0) / lnTotal : 0,
+    umbrales: adaptarUmbrales(respuestas.find((r) => r.umbrales)?.umbrales),
     entidades,
   };
 }
@@ -277,14 +282,17 @@ export async function obtenerSeccion(id: string, entidad = "26"): Promise<Seccio
       .get<ExplicacionContrato>(`/secciones/${entidad}/${Number(id)}/explicacion`)
       .catch(() => null),
     http
-      .get<{ colonias: ColoniaSeccionContrato[] }>(`/secciones/${entidad}/${Number(id)}/colonias`)
+      .get<ColoniaSeccionContrato[] | { colonias: ColoniaSeccionContrato[] }>(
+        `/secciones/${entidad}/${Number(id)}/colonias`,
+      )
       .catch(() => null),
   ]);
   if (!ficha.data) throw new Error(`No se encontró la sección ${entidad}/${id}`);
   return adaptarFicha(
     ficha.data,
     explicacion?.data ?? null,
-    colonias?.data?.colonias ?? null,
+    // El contrato regresa un arreglo; se acepta también { colonias: [...] }
+    colonias?.data ? (Array.isArray(colonias.data) ? colonias.data : colonias.data.colonias) : null,
   );
 }
 
@@ -431,8 +439,14 @@ export { nombreEntidad };
  */
 export function entidadesConGeo(): Set<string> {
   if (USAR_MOCKS) return new Set(["26"]); // cartografía de demo: solo Sonora
+  // Entidades cuya BGD ya se convirtió (ml/src/export/cartografia.py), p. ej. "26,02"
+  const lista = (import.meta.env.VITE_ENTIDADES_CON_GEO as string | undefined) ?? "26";
   return new Set(
-    Array.from({ length: 32 }, (_, i) => String(i + 1).padStart(2, "0")),
+    lista
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .map((c) => c.padStart(2, "0")),
   );
 }
 

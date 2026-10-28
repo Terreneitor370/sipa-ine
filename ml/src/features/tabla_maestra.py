@@ -111,7 +111,10 @@ def construir(res: pd.DataFrame, censo: pd.DataFrame, equiv: pd.DataFrame | None
         t[f"tipo_{tipo}"] = (t["tipo_seccion"] == tipo).astype(int)
 
     if equiv is not None and marg is not None:
-        t = t.merge(equiv[["entidad", "municipio_ine", "municipio_inegi"]], on=["entidad", "municipio_ine"], how="left")
+        # Dos municipios INEGI pueden compartir una clave INE (San Juan y San Pedro
+        # Mixtepec, Oaxaca); se toma el primero para no duplicar secciones.
+        eq = equiv[["entidad", "municipio_ine", "municipio_inegi"]].drop_duplicates(["entidad", "municipio_ine"])
+        t = t.merge(eq, on=["entidad", "municipio_ine"], how="left")
         t = t.merge(marg[["entidad", "municipio_inegi", "ind_marginacion"]], on=["entidad", "municipio_inegi"], how="left")
     else:
         t["ind_marginacion"] = np.nan

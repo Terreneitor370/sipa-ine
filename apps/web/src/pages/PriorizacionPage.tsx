@@ -5,19 +5,20 @@ import { Button } from "../components/ui/Button";
 import { Select } from "../components/ui/Select";
 import { EncabezadoPagina } from "../components/ui/EncabezadoPagina";
 import { CuadroNivel } from "../components/ui/NivelBadge";
-import { usePriorizacion } from "../hooks/useSipa";
+import { useEscenarios, usePriorizacion } from "../hooks/useSipa";
 import { formatEntero, formatPct } from "../lib/format";
 import { ETIQUETA_NIVEL, NIVELES } from "../lib/riesgo";
 import { nombreEntidad } from "../lib/adaptadores";
 import type { FilaPriorizacion } from "../types/api";
-
-const ESCENARIO_ID = 12;
 
 function abstencionB(f: FilaPriorizacion): number {
   return f.abstencionA + f.deltaPp / 100;
 }
 
 export function PriorizacionPage() {
+  // Se prioriza el escenario más reciente del simulador
+  const escenarios = useEscenarios();
+  const ESCENARIO_ID = escenarios.data?.[0]?.escenarioId ?? 0;
   const { data, isLoading } = usePriorizacion(ESCENARIO_ID);
   const [nivel, setNivel] = useState("");
   const [municipio, setMunicipio] = useState("");
@@ -79,7 +80,11 @@ export function PriorizacionPage() {
         migas={["SIPA-INE", "Priorización"]}
         titulo="Matriz de priorización de intervenciones"
         descripcion="Secciones ordenadas por los votos que el modelo estima recuperar: arriba, dónde intervenir primero."
-        badge={`ESCENARIO ${ESCENARIO_ID}${entidadesRango ? " · " + entidadesRango : ""}`}
+        badge={
+          ESCENARIO_ID
+            ? `ESCENARIO ${ESCENARIO_ID}${entidadesRango ? " · " + entidadesRango : ""}`
+            : "SIN ESCENARIOS · CREA UNO EN EL SIMULADOR"
+        }
       />
 
       <div className="flex-1 overflow-auto bg-fondo p-3">

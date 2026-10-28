@@ -200,17 +200,17 @@ export const NOMBRES_ENTIDAD: Record<number, string> = {
   2: "Baja California",
   3: "Baja California Sur",
   4: "Campeche",
-  5: "Chiapas",
-  6: "Chihuahua",
-  7: "Ciudad de México",
-  8: "Coahuila",
-  9: "Colima",
+  5: "Coahuila",
+  6: "Colima",
+  7: "Chiapas",
+  8: "Chihuahua",
+  9: "Ciudad de México",
   10: "Durango",
-  11: "Estado de México",
-  12: "Guanajuato",
-  13: "Guerrero",
-  14: "Hidalgo",
-  15: "Jalisco",
+  11: "Guanajuato",
+  12: "Guerrero",
+  13: "Hidalgo",
+  14: "Jalisco",
+  15: "Estado de México",
   16: "Michoacán",
   17: "Morelos",
   18: "Nayarit",
@@ -352,20 +352,28 @@ export function adaptarModelo(m: ModeloContrato): ModeloInfo {
   const met = m.metricas ?? {};
   const base = m.baseline ?? {};
   const filas: ModeloInfo["metricas"] = [];
+  // Mejora = reducción del error contra el baseline (o aumento de R²)
+  const mejoraError = (m?: number, b?: number) =>
+    m != null && b != null && b > 0 ? `${Math.round((1 - m / b) * 100)}% menos error` : null;
   if (met.rmse != null) {
-    filas.push({ nombre: "RMSE", modelo: met.rmse, baseline: base.rmse ?? null, mejora: null });
+    filas.push({ nombre: "RMSE", modelo: met.rmse, baseline: base.rmse ?? null, mejora: mejoraError(met.rmse, base.rmse) });
   }
   if (met.mae != null) {
-    filas.push({ nombre: "MAE", modelo: met.mae, baseline: base.mae ?? null, mejora: null });
+    filas.push({ nombre: "MAE", modelo: met.mae, baseline: base.mae ?? null, mejora: mejoraError(met.mae, base.mae) });
   }
   if (met.r2 != null) {
-    filas.push({ nombre: "R²", modelo: met.r2, baseline: null, mejora: null });
+    filas.push({
+      nombre: "R²",
+      modelo: met.r2,
+      baseline: base.r2 ?? null,
+      mejora: base.r2 != null ? `+${(met.r2 - base.r2).toFixed(2)}` : null,
+    });
   }
   return {
     version: m.version,
     algoritmo: "XGBoost (XGBRegressor)",
-    entrenamiento: "2018–2021",
-    prueba: `${m.eleccionPrueba ?? 2024} (OOT temporal)`,
+    entrenamiento: `Elección ${m.eleccionPrueba ?? 2024} con historial 2018 y 2021`,
+    prueba: "validación cruzada espacial (5 pliegues por municipio)",
     metricas: filas,
     importanciaVariables: (m.importancia ?? []).map((i) => ({
       variable: i.etiqueta,
