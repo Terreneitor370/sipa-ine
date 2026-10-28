@@ -199,6 +199,23 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/TopoJSON' }
 
+  /geo/{entidad}:
+    get:
+      tags: [Cartografía]
+      summary: Polígonos de todas las secciones de una entidad (TopoJSON)
+      description: |
+        Extensión agregada por el frontend: misma forma que /geo/{entidad}/{municipio}, sin
+        filtrar por municipio. Si la entidad aún no tiene cartografía, regresa una topología
+        con el objeto `secciones` vacío.
+      parameters:
+        - $ref: '#/components/parameters/EntidadPath'
+      responses:
+        '200':
+          description: TopoJSON
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopoJSON' }
+
   /geo/{entidad}/{municipio}:
     get:
       tags: [Cartografía]

@@ -1,0 +1,27 @@
+{
+  "name": "sipa-ine-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API gateway de SIPA-INE: sirve el pronóstico de abstención 2027 según docs/openapi.yaml",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "topojson-server": "^3.0.1"
+  }
+}

@@ -1,0 +1,1 @@
+{"version": "1.0.0", "eleccionObjetivo": 2027, "umbrales": {"medio": 0.458, "alto": 0.543, "muyAlto": 0.6183}, "valorBase": -0.0128, "supuestoNivelNacional2027": 0.4778, "reduccionesCasillas": [0.1, 0.2, 0.3, 0.4], "metricas": {"rmse": 0.05, "mae": 0.04, "r2": 0.74}, "importancia": []}

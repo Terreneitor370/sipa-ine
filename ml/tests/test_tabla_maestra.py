@@ -52,3 +52,13 @@ def test_seccion_nueva_sin_historial_no_entra_a_2024():
     # la sección 3 solo existe en 2024: no tiene rezagos para 2024, pero sí entra a 2027
     assert not ((t.seccion == 3) & (t.anio_objetivo == 2024)).any()
     assert ((t.seccion == 3) & (t.anio_objetivo == 2027)).any()
+
+
+def test_equivalencia_duplicada_no_duplica_secciones():
+    # una clave INE con dos municipios INEGI (caso Mixtepec, Oaxaca)
+    equiv = pd.DataFrame([dict(entidad=26, municipio_ine=55, municipio_inegi=30, nombre_inegi="A"),
+                          dict(entidad=26, municipio_ine=55, municipio_inegi=31, nombre_inegi="A")])
+    marg = pd.DataFrame([dict(entidad=26, municipio_inegi=30, ind_marginacion=50.0),
+                         dict(entidad=26, municipio_inegi=31, ind_marginacion=40.0)])
+    t, _ = construir(_resultados(), _censo(), equiv, marg)
+    assert not t.duplicated(["entidad", "seccion", "anio_objetivo"]).any()

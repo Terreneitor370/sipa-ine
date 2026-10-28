@@ -94,7 +94,17 @@ export function RiskMap({
         onEachFeature={(feature, layer: Layer) => {
           const clave = feature?.properties?.claveSeccion as string | undefined;
           const seccion = clave ? porClave.get(clave) : undefined;
-          if (!seccion) return;
+          if (!seccion) {
+            if (clave) {
+              layer.bindTooltip(
+                `<div style="font-size:11px;line-height:1.45"><b>SECCIÓN: ${escapar(clave)}</b><br/>` +
+                  `Sin pronóstico: sección creada o modificada en la cartografía 2025,<br/>` +
+                  `sin historial electoral 2018-2024.</div>`,
+                { sticky: true },
+              );
+            }
+            return;
+          }
           const html =
             `<div style="font-size:11px;line-height:1.45">` +
             `<b>&#9632; SECCIÓN: ${escapar(seccion.claveSeccion)} (${escapar(seccion.municipio)})</b><br/>` +

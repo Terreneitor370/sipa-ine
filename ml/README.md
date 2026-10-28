@@ -65,11 +65,23 @@ Resultados actuales (validación espacial sobre 2024):
 
 | | RMSE | MAE | R2 |
 |---|---|---|---|
-| Modelo XGBoost | 5.48 pp | 3.69 pp | 0.74 |
+| Modelo XGBoost | 5.49 pp | 3.70 pp | 0.74 |
 | Baseline: última elección del mismo tipo | 7.18 pp | 4.91 pp | 0.56 |
 
 Salidas: `ml/artifacts/` (modelos y `metadata.json`, se suben al repo) y
 `data/processed/predicciones_2027.parquet` y `.csv` (no se suben).
+
+Para el API (apps/api) se exportan los resultados a JSON en `data/processed/api/`:
+
+```
+python -m ml.src.export.exportar_api
+```
+
+Opcional, cartografía de secciones y colonias desde la BGD del INE (requiere geopandas):
+
+```
+python -m ml.src.export.cartografia data/raw/cartografia/bgd_26_sonora
+```
 
 Limitación: no hay validación temporal estricta entre intermedias porque faltan los
 datos de 2015.

@@ -81,7 +81,7 @@ export function SeccionPage() {
         badge={`DF ${data.distrito} · SECC ${data.claveSeccion}`}
         accion={
           <span className="text-[10px] text-ink-2">
-            Corte Geoestadístico: Ene 2025 · Datos agregados
+            Cómputos INE 2018-2024 · Censo 2020 · Datos agregados
           </span>
         }
       />
@@ -99,12 +99,12 @@ export function SeccionPage() {
               <NivelBadge nivel={nivel} />
             </div>
             <p className="mt-1 text-[12px] text-ink-2">
-              Probabilidad estimada de abstención para la elección concurrente intermedia 2027.
+              Abstención estimada para la elección federal intermedia de 2027.
             </p>
             <div className="mt-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] uppercase tracking-wide text-ink-2">
-                  Intervalo de credibilidad bayesiana (P10 - P90)
+                  Intervalo de predicción P10 - P90 (regresión cuantílica)
                 </span>
                 <span className="text-[10px] italic text-ink-2">
                   Amplitud: {data.predicciones.amplitudPp} pp
@@ -144,7 +144,9 @@ export function SeccionPage() {
               </div>
               <div className="flex items-center justify-between py-1.5">
                 <dt className="text-ink-2">Casillas</dt>
-                <dd className="font-medium tabular-nums">{formatEntero(data.indicadores.listaNominal / 4000 < 1 ? 1 : Math.round(data.indicadores.listaNominal / data.indicadores.electoresPorCasilla)) || "18"}</dd>
+                <dd className="font-medium tabular-nums">{data.indicadores.electoresPorCasilla > 0
+                    ? formatEntero(Math.max(1, Math.round(data.indicadores.listaNominal / data.indicadores.electoresPorCasilla)))
+                    : "Sin dato"}</dd>
               </div>
               <div className="flex items-center justify-between py-1.5">
                 <dt className="text-ink-2">Electores por casilla</dt>
@@ -152,7 +154,7 @@ export function SeccionPage() {
               </div>
               <div className="flex items-center justify-between py-1.5">
                 <dt className="text-ink-2">Distancia MAC</dt>
-                <dd className="font-medium tabular-nums">{formatKm(data.indicadores.distMacKm)}</dd>
+                <dd className="font-medium tabular-nums">{data.indicadores.distMacKm > 0 ? formatKm(data.indicadores.distMacKm) : "Sin dato"}</dd>
               </div>
               <div className="flex items-center justify-between py-1.5">
                 <dt className="text-ink-2">Marginación CONAPO</dt>
@@ -169,12 +171,12 @@ export function SeccionPage() {
         <div className="grid gap-3 lg:grid-cols-2">
           <Card titulo="Histórico de abstención (2018-2027)" accion={<span className="text-[10px] text-ink-2">— Real | --- Proyección</span>}>            <HistoryChart historico={data.historico} />
             <p className="mt-2 text-[10px] italic text-ink-2">
-              Comportamiento electoral registrado en actas de escrutinio DERFE. | Nivel de confianza: 95%
+              Abstención observada en los cómputos distritales del INE (diputaciones de mayoría relativa); 2027 es pronóstico.
             </p>
           </Card>
           <Card
             titulo="¿Por qué este riesgo? · Top 5 factores SHAP"
-            accion={<span className="text-[10px] text-ink-2">Explicabilidad Local (KernelSHAP)</span>}
+            accion={<span className="text-[10px] text-ink-2">Explicabilidad local (TreeSHAP)</span>}
           >
             <p className="mb-2 text-[10px] text-ink-2">
               Contribución marginal de atributos socio-electorales sobre el signo de abstención respecto a la media.

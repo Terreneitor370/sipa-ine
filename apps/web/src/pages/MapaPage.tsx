@@ -12,6 +12,7 @@ import { MexicoStatesMap } from "../components/map/MexicoStatesMap";
 import { ColoniaSearch } from "../components/map/ColoniaSearch";
 import { useEntidades, useGeo, useModelo, useMunicipios, useRiesgo, useRiesgoNacional } from "../hooks/useSipa";
 import { entidadesConGeo } from "../api/recursos";
+import { USAR_MOCKS } from "../api/client";
 import { abstencionPromedio, contarPorNivel, nivelDesdeAbstencion } from "../lib/riesgo";
 import { formatEntero, formatPct } from "../lib/format";
 
@@ -235,7 +236,10 @@ export function MapaPage() {
         <span className="text-linea">|</span>
         <span>&#9632; BASE: OpenStreetMap + contornos estatales</span>
         <span className="text-linea">|</span>
-        <span>SECCIONES: cartografía de demo (Sonora)</span>
+        <span>
+          SECCIONES:{" "}
+          {USAR_MOCKS ? "cartografía de demo (Sonora)" : "Base Geográfica Digital INE, corte 2025"}
+        </span>
         <span className="text-linea">|</span>
         <span>FUENTE: cómputos INE 2018–2024</span>
       </div>

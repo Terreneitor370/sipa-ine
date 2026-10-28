@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "entrenadoEn": "2026-10-24T01:33:19+00:00",
+  "entrenadoEn": "2026-10-28T06:30:14+00:00",
   "algoritmo": "XGBRegressor (xgboost 3.2.0)",
   "formulacion": "abstención relativa al nivel nacional; pronóstico = relativa + nivel nacional supuesto",
   "eleccionObjetivo": 2027,
@@ -12,11 +12,11 @@
   "supuestoNivelNacional2027": 0.477807,
   "validacion": {
     "tipo": "validación cruzada espacial (5 pliegues por municipio) sobre la elección 2024",
-    "secciones": 67645,
+    "secciones": 67622,
     "modelo": {
-      "rmse": 0.05477,
-      "mae": 0.03691,
-      "r2": 0.7422
+      "rmse": 0.05491,
+      "mae": 0.03699,
+      "r2": 0.7409
     },
     "baselines": {
       "ultima_eleccion": {
@@ -26,16 +26,16 @@
       },
       "ultima_mismo_tipo": {
         "rmse": 0.07177,
-        "mae": 0.04908,
+        "mae": 0.04907,
         "r2": 0.5574
       }
     },
     "mejorBaseline": "ultima_mismo_tipo",
-    "mejoraRmse": 0.2369
+    "mejoraRmse": 0.2349
   },
-  "seccionesEntrenamiento": 67645,
-  "seccionesPronostico": 67758,
-  "arbolesFinales": 316,
+  "seccionesEntrenamiento": 67622,
+  "seccionesPronostico": 67735,
+  "arbolesFinales": 231,
   "features": [
     "abst_rel_lag1",
     "abst_rel_mismo_tipo",
@@ -65,37 +65,37 @@
     "alto": 0.543,
     "muyAlto": 0.6183
   },
-  "valorBaseShap": -0.012826,
+  "valorBaseShap": -0.012824,
   "importancia": [
     {
       "variable": "abst_rel_mismo_tipo",
       "etiqueta": "Abstención en la última elección del mismo tipo (vs. nacional)",
-      "importancia": 0.4296
+      "importancia": 0.4153
     },
     {
       "variable": "abst_rel_lag1",
       "etiqueta": "Abstención en la elección anterior (vs. nacional)",
-      "importancia": 0.2099
+      "importancia": 0.2169
     },
     {
       "variable": "pct_viv_pc",
       "etiqueta": "Viviendas con computadora",
-      "importancia": 0.0902
+      "importancia": 0.0933
     },
     {
       "variable": "abst_rel_mun_lag1",
       "etiqueta": "Abstención del municipio en la elección anterior",
-      "importancia": 0.0431
+      "importancia": 0.0441
     },
     {
       "variable": "escolaridad_prom",
       "etiqueta": "Escolaridad promedio",
-      "importancia": 0.0331
+      "importancia": 0.035
     },
     {
       "variable": "delta_rel",
       "etiqueta": "Tendencia reciente de la abstención",
-      "importancia": 0.0297
+      "importancia": 0.0295
     },
     {
       "variable": "ind_marginacion",
@@ -105,77 +105,77 @@
     {
       "variable": "pct_posbasica",
       "etiqueta": "Población con educación posbásica",
-      "importancia": 0.015
+      "importancia": 0.0162
     },
     {
       "variable": "pct_60ymas",
       "etiqueta": "Población de 60 años y más",
-      "importancia": 0.013
+      "importancia": 0.0132
     },
     {
       "variable": "pct_viv_auto",
       "etiqueta": "Viviendas con automóvil",
-      "importancia": 0.0123
-    },
-    {
-      "variable": "pct_viv_internet",
-      "etiqueta": "Viviendas con internet",
-      "importancia": 0.012
+      "importancia": 0.0122
     },
     {
       "variable": "pct_18_24",
       "etiqueta": "Población de 18 a 24 años",
-      "importancia": 0.011
+      "importancia": 0.0114
+    },
+    {
+      "variable": "pct_viv_internet",
+      "etiqueta": "Viviendas con internet",
+      "importancia": 0.0105
     },
     {
       "variable": "prom_ocupantes",
       "etiqueta": "Ocupantes por vivienda",
-      "importancia": 0.0099
+      "importancia": 0.0102
     },
     {
       "variable": "electores_por_casilla",
       "etiqueta": "Electores por casilla",
-      "importancia": 0.0097
-    },
-    {
-      "variable": "tipo_rural",
-      "etiqueta": "Sección rural",
-      "importancia": 0.0089
+      "importancia": 0.0099
     },
     {
       "variable": "log_lista_nominal",
       "etiqueta": "Tamaño del electorado",
-      "importancia": 0.0087
+      "importancia": 0.0091
+    },
+    {
+      "variable": "tipo_rural",
+      "etiqueta": "Sección rural",
+      "importancia": 0.0082
     },
     {
       "variable": "tipo_mixta",
       "etiqueta": "Sección mixta",
-      "importancia": 0.0078
-    },
-    {
-      "variable": "pct_sin_servicio_salud",
-      "etiqueta": "Población sin servicios de salud",
-      "importancia": 0.0077
-    },
-    {
-      "variable": "tasa_act_econ",
-      "etiqueta": "Tasa de actividad económica",
-      "importancia": 0.0074
-    },
-    {
-      "variable": "pct_desocupada",
-      "etiqueta": "Población desocupada",
-      "importancia": 0.0073
-    },
-    {
-      "variable": "pct_migrante_reciente",
-      "etiqueta": "Población que llegó de otro estado (desde 2015)",
-      "importancia": 0.0068
+      "importancia": 0.0081
     },
     {
       "variable": "tipo_urbana",
       "etiqueta": "Sección urbana",
-      "importancia": 0.006
+      "importancia": 0.008
+    },
+    {
+      "variable": "pct_sin_servicio_salud",
+      "etiqueta": "Población sin servicios de salud",
+      "importancia": 0.0076
+    },
+    {
+      "variable": "tasa_act_econ",
+      "etiqueta": "Tasa de actividad económica",
+      "importancia": 0.0075
+    },
+    {
+      "variable": "pct_migrante_reciente",
+      "etiqueta": "Población que llegó de otro estado (desde 2015)",
+      "importancia": 0.0065
+    },
+    {
+      "variable": "pct_desocupada",
+      "etiqueta": "Población desocupada",
+      "importancia": 0.0064
     }
   ],
   "hiperparametros": {

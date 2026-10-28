@@ -203,7 +203,9 @@ describe("mocks del contrato de API v1", () => {
 
   it("la clave de entidad con nombre entrega el nombre real (Sonora / CDMX)", () => {
     expect(nombreEntidad(26)).toBe("Sonora");
-    expect(nombreEntidad(7)).toBe("Ciudad de México");
+    expect(nombreEntidad(9)).toBe("Ciudad de México");
+    expect(nombreEntidad(7)).toBe("Chiapas");
+    expect(nombreEntidad(15)).toBe("Estado de México");
   });
 
   it("los umbrales adaptados sin contrato parten de UMBRALES_V1", () => {
