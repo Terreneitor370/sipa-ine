@@ -44,6 +44,36 @@ python -m ml.src.etl.validar
 Por defecto procesa Sonora (26) y Baja California (2). Genera en `data/interim/`
 las tablas en parquet y `reporte_validacion.md`, que se comparte con el equipo.
 
+## 3. Tabla maestra y modelo
+
+```
+python -m ml.src.etl.validar --todas
+python -m ml.src.features.tabla_maestra
+python -m ml.src.train.train
+```
+
+- `tabla_maestra` arma una fila por sección y elección objetivo (2021, 2024, 2027) con
+  rezagos de elecciones anteriores, censo 2020 y marginación. El objetivo es la
+  abstención relativa al nivel nacional de cada elección.
+- `train` valida con 5 pliegues espaciales por municipio sobre 2024, compara contra dos
+  baselines, entrena el modelo final y pronostica 2027 con intervalo P10-P90, nivel de
+  riesgo y los 5 factores SHAP de cada sección. Tarda alrededor de 2 minutos.
+- Supuesto: la abstención nacional de 2027 es la de la última intermedia (2021). Se
+  cambia con `python -m ml.src.train.train --nivel-2027 0.45`.
+
+Resultados actuales (validación espacial sobre 2024):
+
+| | RMSE | MAE | R2 |
+|---|---|---|---|
+| Modelo XGBoost | 5.48 pp | 3.69 pp | 0.74 |
+| Baseline: última elección del mismo tipo | 7.18 pp | 4.91 pp | 0.56 |
+
+Salidas: `ml/artifacts/` (modelos y `metadata.json`, se suben al repo) y
+`data/processed/predicciones_2027.parquet` y `.csv` (no se suben).
+
+Limitación: no hay validación temporal estricta entre intermedias porque faltan los
+datos de 2015.
+
 ## Pruebas
 
 ```
