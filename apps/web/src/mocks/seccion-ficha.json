@@ -1,0 +1,47 @@
+{
+  "entidad": 26,
+  "seccion": 401,
+  "municipio": 30,
+  "municipioNombre": "Hermosillo",
+  "distritoFederal": 4,
+  "tipoSeccion": "urbana",
+  "modeloVersion": "1.2.0",
+  "historial": [
+    {
+      "anio": 2018,
+      "tipoEleccion": "presidencial",
+      "abstencion": 0.535
+    },
+    {
+      "anio": 2021,
+      "tipoEleccion": "intermedia",
+      "abstencion": 0.571
+    },
+    {
+      "anio": 2024,
+      "tipoEleccion": "presidencial",
+      "abstencion": 0.498
+    },
+    {
+      "anio": 2027,
+      "tipoEleccion": "intermedia",
+      "abstencion": 0.543
+    }
+  ],
+  "indicadores": {
+    "listaNominal": 12450,
+    "electoresPorCasilla": 692,
+    "distMacKm": 3.2,
+    "pctVivInternet": 0.498,
+    "indMarginacion": 0.63,
+    "escolaridadProm": 9.2
+  },
+  "prediccion": {
+    "escenario": "inercial",
+    "eleccionObjetivo": 2027,
+    "abstencionPred": 0.543,
+    "p10": 0.497,
+    "p90": 0.589,
+    "nivelRiesgo": "MUY_ALTO"
+  }
+}

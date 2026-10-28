@@ -1,0 +1,14 @@
+{
+  "escenarioId": 12,
+  "modeloVersion": "1.2.0",
+  "cache": false,
+  "resumen": {
+    "seccionesAfectadas": 412,
+    "abstencionPromedio": { "A": 0.512, "B": 0.487 },
+    "porNivel": {
+      "A": { "MUY_ALTO": 160, "ALTO": 252, "MEDIO": 0, "BAJO": 0 },
+      "B": { "MUY_ALTO": 98, "ALTO": 301, "MEDIO": 13, "BAJO": 0 }
+    },
+    "votosRecuperables": 18450
+  }
+}

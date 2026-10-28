@@ -1,0 +1,222 @@
+[
+  {
+    "colonia": "Pueblo Nuevo",
+    "municipio": "San Luis Río Colorado",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 438,
+    "claveSeccion": "0438",
+    "lat": 32.466,
+    "lon": -114.758
+  },
+  {
+    "colonia": "Centro",
+    "municipio": "San Luis Río Colorado",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 427,
+    "claveSeccion": "0427",
+    "lat": 32.478,
+    "lon": -114.722
+  },
+  {
+    "colonia": "Centro",
+    "municipio": "Nogales",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 424,
+    "claveSeccion": "0424",
+    "lat": 31.314,
+    "lon": -110.946
+  },
+  {
+    "colonia": "Bella Vista",
+    "municipio": "Nogales",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 435,
+    "claveSeccion": "0435",
+    "lat": 31.302,
+    "lon": -110.937
+  },
+  {
+    "colonia": "Centro",
+    "municipio": "Hermosillo",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 412,
+    "claveSeccion": "0412",
+    "lat": 29.079,
+    "lon": -110.95
+  },
+  {
+    "colonia": "Pitic",
+    "municipio": "Hermosillo",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 445,
+    "claveSeccion": "0445",
+    "lat": 29.066,
+    "lon": -110.964
+  },
+  {
+    "colonia": "Villa de Seris",
+    "municipio": "Hermosillo",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 434,
+    "claveSeccion": "0434",
+    "lat": 29.052,
+    "lon": -110.951
+  },
+  {
+    "colonia": "Robles",
+    "municipio": "Hermosillo",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 401,
+    "claveSeccion": "0401",
+    "lat": 29.095,
+    "lon": -110.941
+  },
+  {
+    "colonia": "San Benito",
+    "municipio": "Cajeme",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 432,
+    "claveSeccion": "0432",
+    "lat": 27.546,
+    "lon": -109.928
+  },
+  {
+    "colonia": "Centro",
+    "municipio": "Cajeme",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 403,
+    "claveSeccion": "0403",
+    "lat": 27.489,
+    "lon": -109.937
+  },
+  {
+    "colonia": "Primer Hormiguero",
+    "municipio": "Cajeme",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 425,
+    "claveSeccion": "0425",
+    "lat": 27.502,
+    "lon": -109.926
+  },
+  {
+    "colonia": "Guaymas Centro",
+    "municipio": "Guaymas",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 404,
+    "claveSeccion": "0404",
+    "lat": 27.922,
+    "lon": -110.895
+  },
+  {
+    "colonia": "Garcias",
+    "municipio": "Guaymas",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 426,
+    "claveSeccion": "0426",
+    "lat": 27.913,
+    "lon": -110.901
+  },
+  {
+    "colonia": "Puerto Empalme",
+    "municipio": "Empalme",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 439,
+    "claveSeccion": "0439",
+    "lat": 27.957,
+    "lon": -110.808
+  },
+  {
+    "colonia": "La Laguna",
+    "municipio": "Navojoa",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 429,
+    "claveSeccion": "0429",
+    "lat": 27.076,
+    "lon": -109.435
+  },
+  {
+    "colonia": "Mendez",
+    "municipio": "Navojoa",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 440,
+    "claveSeccion": "0440",
+    "lat": 27.063,
+    "lon": -109.447
+  },
+  {
+    "colonia": "Vista Real",
+    "municipio": "Agua Prieta",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 430,
+    "claveSeccion": "0430",
+    "lat": 31.335,
+    "lon": -109.541
+  },
+  {
+    "colonia": "Casa Blanca",
+    "municipio": "Agua Prieta",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 441,
+    "claveSeccion": "0441",
+    "lat": 31.323,
+    "lon": -109.556
+  },
+  {
+    "colonia": "Playa Hermosa",
+    "municipio": "Puerto Peñasco",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 420,
+    "claveSeccion": "0420",
+    "lat": 31.311,
+    "lon": -113.544
+  },
+  {
+    "colonia": "Corte Angélica",
+    "municipio": "Puerto Peñasco",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 431,
+    "claveSeccion": "0431",
+    "lat": 31.324,
+    "lon": -113.531
+  },
+  {
+    "colonia": "Etchojoa Centro",
+    "municipio": "Etchojoa",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 433,
+    "claveSeccion": "0433",
+    "lat": 26.898,
+    "lon": -109.585
+  },
+  {
+    "colonia": "Bacamé",
+    "municipio": "Etchojoa",
+    "entidad": "Sonora",
+    "entidadClave": "26",
+    "seccionId": 444,
+    "claveSeccion": "0444",
+    "lat": 26.887,
+    "lon": -109.596
+  }
+]
