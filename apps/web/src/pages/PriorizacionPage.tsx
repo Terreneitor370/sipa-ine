@@ -123,6 +123,14 @@ export function PriorizacionPage() {
             <p className="p-3 text-[12px] text-ink-2">Cargando ranking…</p>
           ) : (
             <div className="overflow-x-auto">
+              <p className="mb-2 text-[11px] leading-relaxed text-ink-2">
+                <strong className="font-semibold text-ink">Δ PP</strong> = diferencia en{" "}
+                <dfn title="Puntos porcentuales: la diferencia entre 50 % y 51 % es 1 pp.">
+                  puntos porcentuales
+                </dfn>{" "}
+                entre el abstencionismo sin palancas (A) y con palancas (B). "Votos recuperables" =
+                Δ PP × lista nominal de la sección.
+              </p>
               <table className="w-full text-[12px]" data-testid="tabla-priorizacion">
                 <thead>
                   <tr className="bg-tabla text-left text-[10px] uppercase tracking-wide text-ink-2">

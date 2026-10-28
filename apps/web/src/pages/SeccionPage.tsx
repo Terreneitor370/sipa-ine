@@ -24,6 +24,37 @@ export function SeccionPage() {
   const nivel = nivelDesdeAbstencion(data.predicciones.media);
   const colonias = coloniasDeSeccion(data.claveSeccion);
 
+  // Exporta la ficha completa a CSV (los datos, no una captura de pantalla)
+  const exportarFicha = () => {
+    const f = data.factoresTop;
+    const filas = [
+      ["campo", "valor"],
+      ["seccion", data.claveSeccion],
+      ["municipio", data.municipio],
+      ["entidad", data.entidad],
+      ["distrito_federal", data.distrito],
+      ["modelo_version", data.modeloVersion],
+      ["abstencion_predicha_pct", (data.predicciones.media * 100).toFixed(1)],
+      ["p10_pct", (data.predicciones.p10 * 100).toFixed(1)],
+      ["p90_pct", (data.predicciones.p90 * 100).toFixed(1)],
+      ["amplitud_pp", data.predicciones.amplitudPp],
+      ["lista_nominal", data.indicadores.listaNominal],
+      ["dist_mac_km", data.indicadores.distMacKm],
+      ["marginacion", data.indicadores.marginacion],
+      ["pct_internet", data.indicadores.pctInternet],
+      ["factor_variable", f.map((x) => x.variable).join(" | ")],
+      ["factor_contribucion_pp", f.map((x) => (x.contribucion * 100).toFixed(2)).join(" | ")],
+    ];
+    const csv = filas.map((r) => r.join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = `ficha-seccion-${data.claveSeccion}.csv`;
+    enlace.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Exporta solo los factores SHAP (aporte de cada variable a la predicción)
   const exportarShap = () => {
     const filas = [
       ["variable", "descripcion", "contribucion_pp"],
@@ -47,7 +78,7 @@ export function SeccionPage() {
       <EncabezadoPagina
         migas={["SIPA-INE", "Mapa de Riesgo", `Sección ${data.claveSeccion} · ${data.municipio}, ${data.entidad}`]}
         titulo={`Sección ${data.claveSeccion} · ${data.municipio}, ${data.entidad}`}
-        badge={`DF 04 · SECC ${data.claveSeccion}`}
+        badge={`DF ${data.distrito} · SECC ${data.claveSeccion}`}
         accion={
           <span className="text-[10px] text-ink-2">
             Corte Geoestadístico: Ene 2025 · Datos agregados
@@ -101,7 +132,7 @@ export function SeccionPage() {
           <Card
             titulo="Indicadores operativos seccionales"
             accion={
-              <Link to="#" className="inline-flex items-center gap-1 text-[11px] text-acento hover:underline">
+              <Link to="/modelo" className="inline-flex items-center gap-1 text-[11px] text-acento hover:underline">
                 <IconoEnlace /> Ver fuente de datos (DERFE)
               </Link>
             }
@@ -166,7 +197,7 @@ export function SeccionPage() {
             )}
           </span>
           <div className="flex gap-2">
-            <Button variante="secundario" onClick={() => window.print()}><IconoDescarga /> Descargar Ficha PDF</Button>
+            <Button variante="secundario" onClick={exportarFicha}><IconoDescarga /> Exportar ficha completa (CSV)</Button>
             <Button variante="secundario" onClick={exportarShap}><IconoDescarga /> Exportar Datos SHAP (CSV)</Button>
           </div>
         </div>

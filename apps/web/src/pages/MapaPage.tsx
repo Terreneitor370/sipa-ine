@@ -254,7 +254,7 @@ export function MapaPage() {
               umbrales={umbrales}
               onSeleccionEntidad={(clave) => irAEntidad(clave)}
             />
-          ) : geo.data && filtrado ? (
+          ) : geo.data && geo.data.features.length > 0 && filtrado ? (
             <RiskMap
               geo={geo.data}
               riesgo={filtrado}
@@ -349,8 +349,21 @@ export function MapaPage() {
           <Card
             titulo="Convergencia del modelo"
             accion={
-              <span className="rounded-sm border border-linea px-1.5 py-0.5 text-[10px] text-ink-2">
-                {modelo.data ? "OK" : "…"}
+              <span
+                role="status"
+                aria-label={
+                  modelo.data
+                    ? "Convergencia verificada: el modelo está listo"
+                    : "Verificando convergencia"
+                }
+                title="Estado, no botón: indica que la convergencia del modelo fue verificada"
+                className={`rounded-sm border px-1.5 py-0.5 text-[10px] uppercase ${
+                  modelo.data
+                    ? "border-[#31703e] bg-[#e7f3ea] text-[#31703e]"
+                    : "border-linea text-ink-2"
+                }`}
+              >
+                {modelo.data ? "Verificado" : "…"}
               </span>
             }
           >

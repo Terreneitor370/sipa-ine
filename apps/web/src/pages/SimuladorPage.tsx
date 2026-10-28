@@ -131,6 +131,12 @@ export function SimuladorPage() {
                 etiqueta="Votos recuperables"
                 valor={resultado ? formatEntero(resultado.resumen.votosRecuperables) : "—"}
               />
+              <p className="col-span-2 text-[11px] leading-relaxed text-ink-2 xl:col-span-4">
+                <strong className="font-semibold text-ink">Unidades:</strong> A = escenario inercial
+                (sin intervención); B = con las palancas.{" "}
+                <dfn title="Puntos porcentuales: 50 % → 51 % es 1 pp.">Δ en pp = puntos porcentuales</dfn> de
+                abstención; "votos recuperables" = Δ pp × lista nominal afectada.
+              </p>
             </div>
 
             <Card titulo="Impacto por nivel de riesgo">

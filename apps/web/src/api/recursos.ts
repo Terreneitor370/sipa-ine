@@ -99,7 +99,8 @@ function unirCatalogos(lista: CatalogoMunicipios[]): CatalogoMunicipios {
 export async function obtenerCatalogoMunicipios(entidad: string): Promise<CatalogoMunicipios> {
   if (USAR_MOCKS) {
     await espera(80);
-    return municipiosDemo();
+    // catálogo de demo: solo Sonora tiene municipios catalogados
+    return entidad === "26" ? municipiosDemo() : { nombres: [], clavePorNombre: {}, nombrePorClave: {} };
   }
   const enCache = cacheMunicipiosReal.get(entidad);
   if (enCache) return enCache;
@@ -145,10 +146,20 @@ export async function obtenerRiesgo(filtros: {
 }): Promise<RiesgoRespuesta> {
   if (USAR_MOCKS) {
     await espera();
-    const catalogo = municipiosDemo();
+    // En la demo solo Sonora tiene datos de secciones; las demás entidades
+    // regresan vacío (el mapa nacional las pinta con riesgNacionalMock).
+    if (filtros.entidad !== "26") {
+      return adaptarRiesgoSecciones({
+        escenario: "inercial",
+        modeloVersion: "1.2.0",
+        eleccionObjetivo: 2027,
+        umbrales: { muyAlto: 0.559, alto: 0.522, medio: 0.485 },
+        secciones: [],
+      });
+    }
     return adaptarRiesgoSecciones(
       riesgoMock as unknown as RiesgoSeccionesContrato,
-      catalogo.nombrePorClave,
+      municipiosDemo().nombrePorClave,
     );
   }
   const catalogo = await obtenerCatalogoMunicipios(filtros.entidad);
@@ -222,6 +233,8 @@ export async function obtenerRiesgoNacional(): Promise<RiesgoNacionalRespuesta> 
 export async function obtenerGeo(entidad: string): Promise<FeatureCollectionGeo> {
   if (USAR_MOCKS) {
     await espera(120);
+    // cartografía de demo: solo Sonora; el resto vacío y el mapa muestra aviso
+    if (entidad !== "26") return { type: "FeatureCollection", features: [] } as unknown as FeatureCollectionGeo;
     return geoMock as FeatureCollectionGeo;
   }
   // Versión real: TopoJSON del contrato.
@@ -236,9 +249,19 @@ export async function obtenerGeo(entidad: string): Promise<FeatureCollectionGeo>
 export async function obtenerSeccion(id: string, entidad = "26"): Promise<SeccionFicha & { coloniasQueCubre: { colonia: string; pctArea?: number }[] }> {
   if (USAR_MOCKS) {
     await espera();
+    // En la demo solo Sonora tiene datos por sección; otra entidad no existe
+    if (entidad !== "26") throw new Error(`NoEncontrado: la demo no tiene secciones de la entidad ${entidad}`);
     const ficha = fichaMock as unknown as FichaContrato;
+    // El punto clave del bug: derivar el municipio REAL de la sección desde
+    // riesgo.json (el mock de ficha siempre decía Hermosillo / DF 04).
+    const seccionRiesgo = (riesgoMock as { secciones: Array<{ seccion: number; municipio: number }> })
+      .secciones.find((s) => s.seccion === Number(id));
+    const municipios = municipiosDemo().nombrePorClave;
+    const municipioNombre = seccionRiesgo
+      ? municipios[seccionRiesgo.municipio] ?? `Clave ${seccionRiesgo.municipio}`
+      : "—";
     // La demo pide secciones 0401-448; el mock ficha fija la sección pedida
-    const fichaPedida = { ...ficha, seccion: Number(id) } as FichaContrato;
+    const fichaPedida = { ...ficha, seccion: Number(id), municipioNombre } as FichaContrato;
     const base = adaptarFicha(
       fichaPedida,
       { ...explicacionMock, seccion: Number(id) } as ExplicacionContrato,
