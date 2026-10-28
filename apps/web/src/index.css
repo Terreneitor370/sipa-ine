@@ -13,6 +13,17 @@ body {
   font-family: "IBM Plex Sans", system-ui, Segoe UI, Roboto, sans-serif;
 }
 
+/* RNF-05/RNF-13: foco siempre visible para navegación por teclado */
+:focus-visible {
+  outline: 2px solid #d5007f;
+  outline-offset: 1px;
+}
+
+.leaflet-container :focus-visible {
+  outline: 2px solid #d5007f;
+  outline-offset: 0;
+}
+
 .leaflet-container {
   @apply h-full w-full;
   font-family: inherit;

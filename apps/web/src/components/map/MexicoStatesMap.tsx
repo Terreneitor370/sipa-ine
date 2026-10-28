@@ -137,7 +137,7 @@ export function MexicoStatesMap({
             `<b>${nombre}</b><br/>` +
             (tieneDatos && nivel && abst != null
               ? `<span><span style="background:${COLOR_NIVEL[nivel]};color:${
-                  nivel === "MEDIO" || nivel === "BAJO" ? "#1a2a4a" : "#fff"
+                  nivel === "MEDIO" || nivel === "BAJO" || nivel === "ALTO" ? "#1a2a4a" : "#fff"
                 };padding:0 4px;border-radius:2px">${ETIQUETA_NIVEL[nivel]} · ${(abst * 100).toFixed(1)}%</span></span><br/>` +
                 (nSecciones != null
                   ? `<span>${nSecciones.toLocaleString("es-MX")} secciones electorales</span><br/>`

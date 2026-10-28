@@ -25,7 +25,7 @@ export default {
         panel: "#950054",
         fondo: "#FAFAFA",
         ink: "#111827",
-        "ink-2": "#6B7280",
+        "ink-2": "#5A6272",
         linea: "#D1D5DB",
         "linea-2": "#E5E7EB",
         tabla: "#F3F4F6",

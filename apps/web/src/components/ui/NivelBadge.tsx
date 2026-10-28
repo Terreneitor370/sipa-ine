@@ -5,7 +5,11 @@ import { COLOR_NIVEL, ETIQUETA_NIVEL } from "../../lib/riesgo";
 export function NivelBadge({ nivel }: { nivel: NivelRiesgo }) {
   return (
     <span
-      className="inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-semibold uppercase text-white"
+      className={
+        `inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-semibold uppercase ${
+          nivel === "MUY_ALTO" ? "text-white" : "text-[#1a2a4a]"
+        }`
+      }
       style={{ backgroundColor: COLOR_NIVEL[nivel] }}
       data-testid={`nivel-${nivel}`}
     >

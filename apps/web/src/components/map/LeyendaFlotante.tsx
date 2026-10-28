@@ -21,7 +21,11 @@ export function LeyendaFlotante({ umbrales }: { umbrales?: Record<string, { min:
     BAJO: { min: null, max: 0.485 },
   };
   return (
-    <div className="absolute bottom-8 left-2 z-[450] w-[150px] border border-linea bg-white/95 px-2 py-1.5 text-[10px] leading-relaxed text-ink">
+    <div
+      className="absolute bottom-8 left-2 z-[450] w-[150px] border border-linea bg-white/95 px-2 py-1.5 text-[10px] leading-relaxed text-ink"
+      role="img"
+      aria-label="Leyenda de nivel de riesgo del abstencionismo por secciones"
+    >
       <p className="mb-1 font-semibold uppercase tracking-wide text-ink-2">Nivel de riesgo</p>
       <ul className="space-y-0.5">
         {NIVELES.map((nivel) => (

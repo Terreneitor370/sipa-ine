@@ -12,6 +12,9 @@ export function LevelDistribution({
   const total = NIVELES.reduce((acc, n) => acc + porNivel[n], 0);
   return (
     <table className="w-full text-[12px]" data-testid="distribucion-nivel">
+      <caption className="sr-only">
+        Número de secciones por nivel de riesgo y su porcentaje del total
+      </caption>
       <thead>
         <tr className="bg-tabla text-left text-[10px] uppercase tracking-wide text-ink-2">
           <th className="px-1 py-1 font-medium">Nivel</th>

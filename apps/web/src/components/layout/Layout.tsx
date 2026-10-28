@@ -1,8 +1,9 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { Footer } from "./Footer";
 import { Sidebar } from "./Sidebar";
 import { AppHeader } from "./AppHeader";
-import { useState } from "react";
+import { Avisos } from "../ui/Avisos";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -14,6 +15,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <main className="min-h-0 flex-1 overflow-auto bg-fondo">{children}</main>
         <Footer />
       </div>
+      <Avisos />
     </div>
   );
 }
