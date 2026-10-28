@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { NivelBadge } from "../components/ui/NivelBadge";
@@ -13,7 +13,9 @@ import { nivelDesdeAbstencion } from "../lib/riesgo";
 
 export function SeccionPage() {
   const { id = "1234" } = useParams();
-  const { data, isLoading } = useSeccion(id);
+  /** La entidad viene del contexto de navegación (contrato: /secciones/{e}/{s}); */
+  const entidad = (useLocation().state as { entidadClave?: string } | null)?.entidadClave ?? "26";
+  const { data, isLoading } = useSeccion(id, entidad);
 
   if (isLoading || !data) {
     return <p className="text-[13px] text-ink-2">Cargando ficha de sección…</p>;

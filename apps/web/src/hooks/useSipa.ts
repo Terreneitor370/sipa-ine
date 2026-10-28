@@ -41,10 +41,11 @@ export function useEntidades() {
   });
 }
 
-export function useMunicipios(entidad: string) {
+export function useMunicipios(entidad: string, enabled = true) {
   return useQuery<string[]>({
     queryKey: ["municipios", entidad],
     queryFn: () => api.obtenerMunicipios(entidad),
+    enabled: enabled && Boolean(entidad) && entidad !== "00",
     staleTime: 60 * 60 * 1000,
   });
 }
@@ -58,10 +59,10 @@ export function useGeo(entidad: string, enabled = true) {
   });
 }
 
-export function useSeccion(id: string) {
+export function useSeccion(id: string, entidad = "26") {
   return useQuery<SeccionFicha>({
-    queryKey: ["seccion", id],
-    queryFn: () => api.obtenerSeccion(id),
+    queryKey: ["seccion", id, entidad],
+    queryFn: () => api.obtenerSeccion(id, entidad),
     enabled: Boolean(id),
     staleTime: 5 * 60 * 1000,
   });

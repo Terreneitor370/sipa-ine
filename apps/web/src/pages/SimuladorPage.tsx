@@ -7,9 +7,10 @@ import { EncabezadoPagina } from "../components/ui/EncabezadoPagina";
 import { PalancasPanel } from "../components/simulator/PalancasPanel";
 import { ScenarioCompare } from "../components/simulator/ScenarioCompare";
 import { RiskMap } from "../components/map/RiskMap";
-import { useGeo, useRiesgo, useSimulacion, useEscenarios } from "../hooks/useSipa";
+import { useGeo, useRiesgo, useSimulacion, useEscenarios, useEntidades } from "../hooks/useSipa";
 import type { Palancas, SimulacionResumen } from "../types/api";
 import { formatEntero, formatPp, formatPct } from "../lib/format";
+import { nombreEntidad } from "../lib/adaptadores";
 
 const PALANCAS_INICIALES: Palancas = {
   reduccionElectoresCasilla: 0.2,
@@ -20,18 +21,22 @@ const PALANCAS_INICIALES: Palancas = {
 
 export function SimuladorPage() {
   const [nombre, setNombre] = useState("Simulación operativa 2027");
+  /** Entidad del escenario: la demo trae cartografía de Sonora, pero el
+   * simulador funciona con cualquier entidad desde el contrato. */
+  const [entidad, setEntidad] = useState("26");
   const [palancas, setPalancas] = useState<Palancas>(PALANCAS_INICIALES);
   const [resultado, setResultado] = useState<SimulacionResumen | null>(null);
 
-  const geo = useGeo("26");
-  const riesgo = useRiesgo({ entidad: "26" });
+  const entidades = useEntidades();
+  const geo = useGeo(entidad);
+  const riesgo = useRiesgo({ entidad });
   const escenarios = useEscenarios();
   const queryClient = useQueryClient();
   const { mutate, isPending } = useSimulacion();
 
   const ejecutar = () => {
     mutate(
-      { nombre, entidad: "26", palancas },
+      { nombre, entidad, palancas },
       {
         onSuccess: (res) => {
           setResultado(res);
@@ -61,7 +66,7 @@ export function SimuladorPage() {
         migas={["SIPA-INE", "Simulador"]}
         titulo="Simulador de escenarios"
         descripcion="Mueve las palancas de intervención y compara qué pasa: escenario A (inercial) vs B (intervención)."
-        badge="Escenario · Sonora"
+        badge={`Escenario · ${entidades.data?.find((e) => e.clave === entidad)?.nombre ?? nombreEntidad(Number(entidad))}`}
         accion={<span className="text-[10px] text-ink-2">Comparación A (inercial) vs B (intervención)</span>}
       />
 
@@ -75,6 +80,24 @@ export function SimuladorPage() {
               </Button>
             }
           >
+            <label className="mb-3 block">
+              <span className="mb-1 block text-[11px] uppercase tracking-wide text-ink-2">
+                Entidad del escenario
+              </span>
+              <select
+                value={entidad}
+                onChange={(e) => setEntidad(e.target.value)}
+                className="h-8 w-full rounded-sm border border-linea bg-white px-2 text-[13px] text-ink outline-none focus:border-acento"
+              >
+                {(entidades.data ?? [{ clave: entidad, nombre: `Entidad ${entidad}` }])
+                  .filter((e) => e.clave !== "00")
+                  .map((e) => (
+                    <option key={e.clave} value={e.clave}>
+                      {e.nombre}
+                    </option>
+                  ))}
+              </select>
+            </label>
             <label className="mb-3 block">
               <span className="mb-1 block text-[11px] uppercase tracking-wide text-ink-2">
                 Nombre del escenario

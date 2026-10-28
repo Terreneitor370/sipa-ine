@@ -11,6 +11,7 @@ import { RiskMap } from "../components/map/RiskMap";
 import { MexicoStatesMap } from "../components/map/MexicoStatesMap";
 import { ColoniaSearch } from "../components/map/ColoniaSearch";
 import { useEntidades, useGeo, useModelo, useMunicipios, useRiesgo, useRiesgoNacional } from "../hooks/useSipa";
+import { entidadesConGeo } from "../api/recursos";
 import { abstencionPromedio, contarPorNivel, nivelDesdeAbstencion } from "../lib/riesgo";
 import { formatEntero, formatPct } from "../lib/format";
 
@@ -40,8 +41,8 @@ export function MapaPage() {
 
   const entidades = useEntidades();
   const esNacional = filtros.entidad === VISTA_NACIONAL;
-  const claveEntidadDatos = esNacional ? "26" : filtros.entidad;
-  const municipios = useMunicipios(claveEntidadDatos);
+  const claveEntidadDatos = esNacional ? VISTA_NACIONAL : filtros.entidad;
+  const municipios = useMunicipios(claveEntidadDatos, !esNacional);
   const geo = useGeo(claveEntidadDatos, !esNacional);
   const riesgo = useRiesgo({ entidad: claveEntidadDatos }, !esNacional);
   const riesgoNacional = useRiesgoNacional();
@@ -123,6 +124,9 @@ export function MapaPage() {
     return m;
   }, [riesgoNacional.data]);
 
+  /** Entidades con cartografía disponible (vía /geo/{entidad}/{municipio} del contrato). */
+  const entidadesConCartografia = useMemo(() => entidadesConGeo(), []);
+
   const irAEntidad = (clave: string) => {    const next = { ...borrador, entidad: clave, municipio: TODOS, distrito: TODOS };
     setBorrador(next);
     setFiltros(next);
@@ -165,13 +169,13 @@ export function MapaPage() {
             etiqueta="Entidad"
             value={borrador.entidad}
             onChange={(e) => cambiar({ entidad: e.target.value, municipio: TODOS, distrito: TODOS })}
-            opciones={(entidades.data ?? [{ clave: "26", nombre: "Sonora" }]).map((e) => ({
+            opciones={(entidades.data ?? []).map((e) => ({
               valor: e.clave,
               texto: e.nombre,
             }))}
           />
         </div>
-        <ColoniaSearch entidadClave={borrador.entidad === VISTA_NACIONAL ? "26" : borrador.entidad} />
+        <ColoniaSearch entidadClave={borrador.entidad} />
         <div className="w-44">
           <Select
             etiqueta="Municipio"
@@ -244,19 +248,19 @@ export function MapaPage() {
           {esNacional ? (
             <MexicoStatesMap
               entidadesConDatos={entidadesConDatos}
-              conSecciones={new Set(["26"])}
+              conSecciones={entidadesConCartografia}
               abstencionPromedioPorEntidad={abstencionPorEntidad}
               seccionesPorEntidad={seccionesPorEntidad}
               umbrales={umbrales}
               onSeleccionEntidad={(clave) => irAEntidad(clave)}
             />
-          ) : claveEntidadDatos === "26" && geo.data && filtrado ? (
+          ) : geo.data && filtrado ? (
             <RiskMap
               geo={geo.data}
               riesgo={filtrado}
-              centro={[29.6, -111.4]}
-              zoom={6}
-              onSeleccion={(id) => navigate(`/seccion/${id}`)}
+              onSeleccion={(id) =>
+                navigate(`/seccion/${id}`, { state: { entidadClave: claveEntidadDatos } })
+              }
             />
           ) : (
             <p className="p-4 text-[13px] text-ink-2">

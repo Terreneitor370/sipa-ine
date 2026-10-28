@@ -68,6 +68,7 @@ interface CatalogoMunicipios {
 }
 
 let cacheMunicipios: CatalogoMunicipios | null = null;
+const cacheMunicipiosReal = new Map<string, CatalogoMunicipios>();
 
 function municipiosDemo(): CatalogoMunicipios {
   if (cacheMunicipios) return cacheMunicipios;
@@ -82,11 +83,26 @@ function municipiosDemo(): CatalogoMunicipios {
   return cacheMunicipios;
 }
 
+/** Une varios catálogos por entidad (para respuestas que mezclan entidades). */
+function unirCatalogos(lista: CatalogoMunicipios[]): CatalogoMunicipios {
+  const clavePorNombre: Record<string, number> = {};
+  const nombrePorClave: Record<number, string> = {};
+  let nombres: string[] = [];
+  for (const c of lista) {
+    Object.assign(clavePorNombre, c.clavePorNombre);
+    Object.assign(nombrePorClave, c.nombrePorClave);
+    if (!nombres.length) nombres = c.nombres;
+  }
+  return { nombres, clavePorNombre, nombrePorClave };
+}
+
 export async function obtenerCatalogoMunicipios(entidad: string): Promise<CatalogoMunicipios> {
   if (USAR_MOCKS) {
     await espera(80);
     return municipiosDemo();
   }
+  const enCache = cacheMunicipiosReal.get(entidad);
+  if (enCache) return enCache;
   const { data } = await http.get<MunicipioContrato[]>(`/entidades/${entidad}/municipios`);
   const clavePorNombre: Record<string, number> = {};
   const nombrePorClave: Record<number, string> = {};
@@ -94,7 +110,9 @@ export async function obtenerCatalogoMunicipios(entidad: string): Promise<Catalo
     clavePorNombre[m.nombre] = m.municipio;
     nombrePorClave[m.municipio] = m.nombre;
   }
-  return { nombres: data.map((m) => m.nombre), clavePorNombre, nombrePorClave };
+  const catalogo = { nombres: data.map((m) => m.nombre), clavePorNombre, nombrePorClave };
+  cacheMunicipiosReal.set(entidad, catalogo);
+  return catalogo;
 }
 
 /* ======== Entidades ======== */
@@ -359,10 +377,14 @@ export async function obtenerPriorizacion(escenarioId: number): Promise<Prioriza
       municipiosDemo().nombrePorClave,
     );
   }
-  const catalogo = await obtenerCatalogoMunicipios("26");
   const { data } = await http.get<PriorizacionContrato[]>("/priorizacion", {
     params: { escenario: escenarioId },
   });
+  // Los municipios se resuelven por las entidades presentes en las filas
+  const entidadesEnFilas = [...new Set(data.map((p) => String(p.entidad)))];
+  const catalogo = unirCatalogos(
+    await Promise.all(entidadesEnFilas.map((e) => obtenerCatalogoMunicipios(e))),
+  );
   return adaptarPriorizacion(data, escenarioId, catalogo.nombrePorClave);
 }
 
@@ -378,4 +400,16 @@ export async function obtenerModelo(): Promise<ModeloInfo> {
 }
 
 export { nombreEntidad };
+
+/**
+ * Cartografía de secciones disponible. En demo solo Sonora tiene polígonos
+ * (48 secciones de prueba); en producción el backend sirve /geo/{entidad}/
+ * {municipio} para las 32 entidades y este catálogo se deriva de /entidades.
+ */
+export function entidadesConGeo(): Set<string> {
+  if (USAR_MOCKS) return new Set(["26"]); // cartografía de demo: solo Sonora
+  return new Set(
+    Array.from({ length: 32 }, (_, i) => String(i + 1).padStart(2, "0")),
+  );
+}
 

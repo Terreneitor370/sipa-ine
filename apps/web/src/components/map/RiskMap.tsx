@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { GeoJSON, MapContainer, ScaleControl, TileLayer, useMapEvents } from "react-leaflet";
+import { useEffect, useState } from "react";
+import { GeoJSON, MapContainer, ScaleControl, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import * as L from "leaflet";
 import { OsmAttribution } from "./OsmAttribution";
 import { LeyendaFlotante } from "./LeyendaFlotante";
 
@@ -39,25 +40,38 @@ function Coordenadas() {
   );
 }
 
+/** Ajusta la vista al rectángulo (potentreto/potretazo) del GeoJSON al cargar */
+function AjusteVista({ geo }: { geo: FeatureCollectionGeo }) {
+  const map = useMap();
+  useEffect(() => {
+    try {
+      const b = L.geoJSON(geo as unknown as GeoJSON.GeoJsonObject).getBounds();
+      if (b.isValid()) map.fitBounds(b, { padding: [10, 10] });
+    } catch {
+      // geometría inválida: se deja la vista por defecto
+    }
+  }, [geo, map]);
+  return null;
+}
+
 export function RiskMap({
   geo,
   riesgo,
   onSeleccion,
-  centro = [28.9, -110.9],
-  zoom = 6,
+  zoom = 8,
 }: {
   geo: FeatureCollectionGeo;
   riesgo?: RiesgoRespuesta;
   onSeleccion?: (seccionId: number) => void;
-  centro?: [number, number];
   zoom?: number;
 }) {
   const porClave = new Map(riesgo?.secciones.map((s) => [s.claveSeccion, s]) ?? []);
+  void zoom;
 
   return (
     <MapContainer
-      center={centro}
-      zoom={zoom}
+      center={[23.2, -102.5]}
+      zoom={5}
       preferCanvas
       scrollWheelZoom
       attributionControl={false}
@@ -69,6 +83,7 @@ export function RiskMap({
       <OsmAttribution />
       <LeyendaFlotante umbrales={riesgo?.umbrales} />
       <Coordenadas />
+      <AjusteVista geo={geo} />
       <GeoJSON
         data={geo as unknown as GeoJSON.FeatureCollection}
         style={(feature): PathOptions => {

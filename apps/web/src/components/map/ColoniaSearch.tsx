@@ -29,7 +29,7 @@ export function ColoniaSearch({ entidadClave }: { entidadClave: string }) {
     setConsulta(`${r.colonia}, ${r.municipio}`);
     setAbierto(false);
     navigate(`/seccion/${r.seccionId}`, {
-      state: { lat: r.lat, lon: r.lon, claveSeccion: r.claveSeccion },
+      state: { lat: r.lat, lon: r.lon, claveSeccion: r.claveSeccion, entidadClave: r.entidadClave },
     });
   };
 

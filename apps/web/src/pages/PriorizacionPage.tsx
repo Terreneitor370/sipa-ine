@@ -8,6 +8,7 @@ import { CuadroNivel } from "../components/ui/NivelBadge";
 import { usePriorizacion } from "../hooks/useSipa";
 import { formatEntero, formatPct } from "../lib/format";
 import { ETIQUETA_NIVEL, NIVELES } from "../lib/riesgo";
+import { nombreEntidad } from "../lib/adaptadores";
 import type { FilaPriorizacion } from "../types/api";
 
 const ESCENARIO_ID = 12;
@@ -63,13 +64,22 @@ export function PriorizacionPage() {
     URL.revokeObjectURL(url);
   };
 
+  /** Entidades presentes en el ranking (multientidad cuando el backend sirva todo México). */
+  const entidadesRango = useMemo(
+    () =>
+      [...new Set((data?.filas ?? []).map((f) => f.entidad))]
+        .map((c) => nombreEntidad(Number(c)))
+        .join(", "),
+    [data],
+  );
+
   return (
     <div className="flex h-full flex-col">
       <EncabezadoPagina
         migas={["SIPA-INE", "Priorización"]}
         titulo="Matriz de priorización de intervenciones"
         descripcion="Secciones ordenadas por los votos que el modelo estima recuperar: arriba, dónde intervenir primero."
-        badge={`ESCENARIO ${ESCENARIO_ID} · SONORA`}
+        badge={`ESCENARIO ${ESCENARIO_ID}${entidadesRango ? " · " + entidadesRango : ""}`}
       />
 
       <div className="flex-1 overflow-auto bg-fondo p-3">
@@ -132,7 +142,11 @@ export function PriorizacionPage() {
                     <tr key={f.seccionId} className="h-8 border-t border-linea-2 hover:bg-tabla">
                       <td className="px-3 text-ink-2 tabular-nums">{i + 1}</td>
                       <td className="px-3">
-                        <Link to={`/seccion/${f.seccionId}`} className="text-acento hover:underline">
+                        <Link
+                          to={`/seccion/${f.seccionId}`}
+                          state={{ entidadClave: f.entidad }}
+                          className="text-acento hover:underline"
+                        >
                           {f.claveSeccion}
                         </Link>
                       </td>

@@ -384,6 +384,7 @@ export function adaptarPriorizacion(
   const adaptadas = filas.map((p) => ({
     seccionId: p.seccion,
     claveSeccion: pad4(p.seccion),
+    entidad: pad2(p.entidad),
     municipio: municipiosPorClave[p.municipio ?? -1] ?? String(p.municipio ?? "—"),
     listaNominal: p.listaNominal ?? 0,
     abstencionA: p.abstencionA,

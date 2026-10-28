@@ -133,6 +133,8 @@ export interface SimulacionResumen {
 export interface FilaPriorizacion {
   seccionId: number;
   claveSeccion: string;
+  /** Clave INE de la entidad (necesaria para /secciones/{e}/{s}). */
+  entidad: string;
   municipio: string;
   listaNominal: number;
   abstencionA: number;
