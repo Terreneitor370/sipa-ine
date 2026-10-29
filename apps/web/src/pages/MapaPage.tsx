@@ -10,7 +10,7 @@ import { Legend } from "../components/map/Legend";
 import { RiskMap } from "../components/map/RiskMap";
 import { MexicoStatesMap } from "../components/map/MexicoStatesMap";
 import { ColoniaSearch } from "../components/map/ColoniaSearch";
-import { useEntidades, useGeo, useModelo, useMunicipios, useRiesgo, useRiesgoNacional } from "../hooks/useSipa";
+import { useEntidades, useGeo, useMunicipios, useRiesgo, useRiesgoNacional } from "../hooks/useSipa";
 import { entidadesConGeo } from "../api/recursos";
 import { abstencionPromedio, contarPorNivel, nivelDesdeAbstencion } from "../lib/riesgo";
 import { formatEntero, formatPct } from "../lib/format";
@@ -46,7 +46,6 @@ export function MapaPage() {
   const geo = useGeo(claveEntidadDatos, !esNacional);
   const riesgo = useRiesgo({ entidad: claveEntidadDatos }, !esNacional);
   const riesgoNacional = useRiesgoNacional();
-  const modelo = useModelo();
 
   const todos = useMemo(() => riesgo.data?.secciones ?? [], [riesgo.data]);
 
@@ -325,47 +324,6 @@ export function MapaPage() {
           <Card titulo="Leyenda de corte">
             <Legend umbrales={umbrales} />
           </Card>
-
-          <Card
-            titulo="Convergencia del modelo"
-            accion={
-              <span
-                role="status"
-                aria-label={
-                  modelo.data
-                    ? "Convergencia verificada: el modelo está listo"
-                    : "Verificando convergencia"
-                }
-                title="Estado, no botón: indica que la convergencia del modelo fue verificada"
-                className={`rounded-sm border px-1.5 py-0.5 text-[10px] uppercase ${
-                  modelo.data
-                    ? "border-[#31703e] bg-[#e7f3ea] text-[#31703e]"
-                    : "border-linea text-ink-2"
-                }`}
-              >
-                {modelo.data ? "Verificado" : "…"}
-              </span>
-            }
-          >
-            {modelo.data ? (
-              <>
-                <p className="text-[12px] text-ink-2">
-                  RMSE (validación OOT 2024):{" "}
-                  {modelo.data.metricas.find((m) => m.nombre.includes("RMSE"))?.modelo ?? "—"} pp.
-                  Modelo {modelo.data.version} · {modelo.data.algoritmo}.
-                </p>
-                <div className="mt-2 flex gap-4 text-[11px] text-ink-2">
-                  <span>
-                    R²:{" "}
-                    {modelo.data.metricas.find((m) => m.nombre.startsWith("R²"))?.modelo ?? "—"}
-                  </span>
-                  <span>Entrenamiento: {modelo.data.entrenamiento}</span>
-                </div>
-              </>
-            ) : (
-              <p className="text-[12px] text-ink-2">Cargando métricas del modelo…</p>
-            )}
-          </Card>
         </div>
       </div>
 
@@ -387,7 +345,7 @@ export function MapaPage() {
             sel: '[data-tour="panel"]',
             titulo: "Análisis a la derecha",
             texto:
-              "Resumen del entorno, distribución por nivel de riesgo, leyenda con los umbrales fijos del modelo y convergencia.",
+              "Resumen del entorno, distribución por nivel de riesgo y leyenda con los umbrales fijos del modelo. Los detalles del modelo están en la pestaña Modelo.",
           },
           {
             sel: 'a[href="/simulador"]',
