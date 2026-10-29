@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -30,6 +30,10 @@ export function SimuladorPage() {
   const entidades = useEntidades();
   const geo = useGeo(entidad);
   const riesgo = useRiesgo({ entidad });
+  const municipiosConDatos = useMemo(
+    () => [...new Set((riesgo.data?.secciones ?? []).map((s) => s.municipio))].sort((a, b) => a.localeCompare(b, "es-MX")),
+    [riesgo.data],
+  );
   const escenarios = useEscenarios();
   const queryClient = useQueryClient();
   const { mutate, isPending } = useSimulacion();
@@ -115,7 +119,7 @@ export function SimuladorPage() {
                 className="h-8 w-full rounded-sm border border-linea bg-white px-2 text-[13px] text-ink outline-none focus:border-acento"
               />
             </label>
-            <PalancasPanel palancas={palancas} onChange={setPalancas} />
+            <PalancasPanel palancas={palancas} municipiosDisponibles={municipiosConDatos} onChange={setPalancas} />
           </Card>
 
           <div className="space-y-3">

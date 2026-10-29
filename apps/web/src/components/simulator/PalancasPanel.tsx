@@ -4,9 +4,12 @@ import { LeverSlider } from "./LeverSlider";
 
 export function PalancasPanel({
   palancas,
+  municipiosDisponibles,
   onChange,
 }: {
   palancas: Palancas;
+  /** Nombres de municipios con secciones en la entidad (demo: solo Sonora). */
+  municipiosDisponibles?: string[];
   onChange: (palancas: Palancas) => void;
 }) {
   const actualizar = (parcial: Partial<Palancas>) => onChange({ ...palancas, ...parcial });
@@ -100,6 +103,36 @@ export function PalancasPanel({
           ))}
         </div>
       </fieldset>
+      <label className="block" title="Limita la intervención a un municipio; 'Todos' abarca toda la entidad">
+        <span className="mb-1 block text-[11px] uppercase tracking-wide text-ink-2">
+          Municipios focalizados
+        </span>
+        <select
+          value={
+            palancas.focalizacion.municipios.length === 1
+              ? palancas.focalizacion.municipios[0]
+              : "__todos__"
+          }
+          onChange={(e) => {
+            const valor = e.target.value;
+            actualizar({
+              focalizacion: { ...palancas.focalizacion, municipios: valor === "__todos__" ? [] : [valor] },
+            });
+          }}
+          className="h-8 w-full rounded-sm border border-linea bg-white px-2 text-[13px] text-ink outline-none focus:border-acento"
+        >
+          <option value="__todos__">
+            {municipiosDisponibles && municipiosDisponibles.length > 0
+              ? "Todos los municipios con datos"
+              : "Todos los municipios"}
+          </option>
+          {(municipiosDisponibles ?? []).map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }

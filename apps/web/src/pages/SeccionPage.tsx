@@ -81,8 +81,13 @@ export function SeccionPage() {
         titulo={`Sección ${data.claveSeccion} · ${data.municipio}, ${data.entidad}`}
         badge={`DF ${data.distrito} · SECC ${data.claveSeccion}`}
         accion={
-          <span className="text-[10px] text-ink-2">
-            Datos agregados · corte ene 2025
+          <span className="flex items-center gap-3">
+            <Link to="/" className="text-[11px] text-acento hover:underline">
+              &larr; Volver al mapa
+            </Link>
+            <span className="text-[10px] text-ink-2">
+              Datos agregados · corte ene 2025
+            </span>
           </span>
         }
       />
