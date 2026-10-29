@@ -33,7 +33,6 @@ function claveEntidadDesdeFeature(props: Record<string, unknown> | null | undefi
 
 export function MexicoStatesMap({
   entidadesConDatos,
-  conSecciones,
   abstencionPromedioPorEntidad,
   seccionesPorEntidad,
   umbrales,
@@ -41,7 +40,7 @@ export function MexicoStatesMap({
   onSeleccionEntidad,
 }: {
   entidadesConDatos: Set<string>;
-  /** Entidades con cartografía de secciones cargada (demo: Sonora) */
+  /** Marca (visual) de entidades con cartografía de demo — reservado para un estilo distintivo */
   conSecciones?: Set<string>;
   abstencionPromedioPorEntidad: Map<string, number>;
   /** Secciones por entidad para el tooltip (mapa nacional). */
@@ -91,6 +90,10 @@ export function MexicoStatesMap({
       <LeyendaFlotante umbrales={umbrales} />
       <Coordenadas />
       <GeoJSON
+        // El estilo se evalúa una sola vez al crear la capa: si los datos del
+        // riesgo llegan después de la geometría, la capa se re-monta con la
+        // clave para repintar todos los estados con su nivel.
+        key={abstencionPromedioPorEntidad.size > 0 ? "datos-listos" : "datos-pendientes"}
         data={geo}
         style={(feature): PathOptions => {
           const clave = claveEntidadDesdeFeature(feature?.properties as Record<string, unknown>);
@@ -127,7 +130,9 @@ export function MexicoStatesMap({
           const clave = claveEntidadDesdeFeature(props);
           const nombre = props.state_name ?? "Entidad";
           const tieneDatos = clave != null && entidadesConDatos.has(clave);
-          const navegable = clave != null && (conSecciones?.has(clave) ?? false);
+          // Cualquier estado con predicción es navegable: clickarlo lleva a su
+          // vista (si la demo no tiene secciones, ahí se ve el aviso).
+          const navegable = tieneDatos && clave != null;
           const abst = clave != null ? abstencionPromedioPorEntidad.get(clave) : undefined;
           const nivel = abst != null ? nivelDesdeAbstencion(abst) : null;
           const fueraDelFiltro = tieneDatos && abst == null;
@@ -143,14 +148,14 @@ export function MexicoStatesMap({
                   ? `<span>${nSecciones.toLocaleString("es-MX")} secciones electorales</span><br/>`
                   : "") +
                 (navegable
-                  ? `<span>Secciones con cartografía de demo · clic para detalle</span>`
+                  ? `<span>Consulta sus ${nSecciones != null ? nSecciones.toLocaleString("es-MX") + " secciones" : "secciones"} · clic para abrir</span>`
                   : `<span style="color:#6B7280">Cartografía de secciones pendiente en la demo</span>`)
               : fueraDelFiltro
                 ? `<span style="color:#6B7280">Fuera del filtro de nivel aplicado</span>`
                 : `<span style="color:#6B7280">Sin predicciones en este entorno de demo</span>`) +
             `</div>`;
           layer.bindTooltip(html, { sticky: true });
-          if (navegable && clave && !fueraDelFiltro) {
+          if (navegable) {
             layer.on("click", () => onSeleccionEntidad?.(clave, nombre));
             (layer as Path).on("mouseover", function (this: Path) {
               this.setStyle({ weight: 2, color: "#d5007f" });

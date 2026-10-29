@@ -50,23 +50,14 @@ export function MapaPage() {
 
   const todos = useMemo(() => riesgo.data?.secciones ?? [], [riesgo.data]);
 
+  const sinMunicipiosDemo = !esNacional && claveEntidadDatos !== "26";
   const opcionesMunicipios = useMemo(
     () => [
-      { valor: TODOS, texto: `Todos (${municipios.data?.length ?? 0})` },
+      { valor: TODOS, texto: sinMunicipiosDemo ? "Sin datos en la demo (solo Sonora)" : `Todos (${municipios.data?.length ?? 0})` },
       ...(municipios.data ?? []).map((m) => ({ valor: m, texto: m })),
     ],
-    [municipios.data],
+    [municipios.data, sinMunicipiosDemo],
   );
-
-  const opcionesDistritos = useMemo(() => {
-    const unicos = [...new Set(todos.map((s) => s.distrito))]
-      .filter((d) => d > 0)
-      .sort((a, b) => a - b);
-    return [
-      { valor: TODOS, texto: `Todos (${unicos.length})` },
-      ...unicos.map((d) => ({ valor: String(d), texto: `Distrito ${d}` })),
-    ];
-  }, [todos]);
 
   const visibles = useMemo(
     () =>
@@ -81,8 +72,6 @@ export function MapaPage() {
 
   const filtrado = riesgo.data ? { ...riesgo.data, secciones: visibles } : undefined;
   const porNivel = contarPorNivel(visibles);
-  const nombreEntidad =
-    entidades.data?.find((e) => e.clave === filtros.entidad)?.nombre ?? "México";
 
   const entidadesConDatos = useMemo(
     () => new Set((riesgoNacional.data?.entidades ?? []).map((e) => e.clave)),
@@ -156,7 +145,7 @@ export function MapaPage() {
       <EncabezadoPagina
         migas={["SIPA-INE", "Mapa de Riesgo"]}
         titulo="Mapa de riesgo de abstención 2027"
-        descripcion="Toca un estado con datos para bajar a sus secciones · filtra, busca una colonia o pulsa una sección para ver su ficha."
+        descripcion="Toca cualquier estado para abrir su vista por secciones · filtra, busca una colonia o pulsa una sección para ver su ficha."
         badge="Entorno federal 2027"
       />
 
@@ -176,7 +165,7 @@ export function MapaPage() {
           />
         </div>
         <ColoniaSearch entidadClave={borrador.entidad} />
-        <div className="w-44">
+        <div className="w-44" title={sinMunicipiosDemo ? "La demo solo tiene catálogo de municipios para Sonora; con la API real se carga el de cada entidad" : "Municipios con secciones cartografiadas en la demo"}>
           <Select
             etiqueta="Municipio"
             value={borrador.municipio}
@@ -185,13 +174,13 @@ export function MapaPage() {
             opciones={opcionesMunicipios}
           />
         </div>
-        <div className="w-36">
+        <div className="w-36" title="El API v1 entrega el distrito federal solo por sección (en la ficha), no en la lista de riesgo. Vendrá como filtro cuando el contrato lo incluya.">
           <Select
             etiqueta="Distrito"
-            value={borrador.distrito}
-            disabled={borrador.entidad === VISTA_NACIONAL}
-            onChange={(e) => cambiar({ distrito: e.target.value })}
-            opciones={opcionesDistritos}
+            value={TODOS}
+            disabled
+            onChange={() => undefined}
+            opciones={[{ valor: TODOS, texto: "Pendiente en el API v1" }]}
           />
         </div>
         <div className="w-40">
@@ -222,23 +211,21 @@ export function MapaPage() {
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-linea bg-fondo px-3 py-1 text-[11px] text-ink-2">
-        <span>PROYECCIÓN: escenario inercial 2027</span>
-        <span className="text-linea">|</span>
-        <span>CAPA: polígonos de sección electoral</span>
-        <span className="text-linea">|</span>
-        <span>
-          {esNacional
-            ? `MÉXICO: ${resumenNacional?.entidades ?? "—"} de 32 entidades (filtro de nivel)`
-            : `${nombreEntidad.toUpperCase()}: ${municipios.data?.length ?? "—"} municipios`}
+      <p className="flex items-center gap-2 border-b border-linea bg-fondo px-3 py-1 text-[11px] text-ink-2">
+        <span title="La geometría electoral se muestra sobre el mapa base de OpenStreetMap">
+          Escenario inercial 2027 · Cómputos INE 2018–2024 · Mapa OpenStreetMap
         </span>
-        <span className="text-linea">|</span>
-        <span>&#9632; BASE: OpenStreetMap + contornos estatales</span>
-        <span className="text-linea">|</span>
-        <span>SECCIONES: cartografía de demo (Sonora)</span>
-        <span className="text-linea">|</span>
-        <span>FUENTE: cómputos INE 2018–2024</span>
-      </div>
+        {!esNacional && claveEntidadDatos !== "26" && (
+          <span className="border border-[#B45309] bg-[#FFFBEB] px-1.5 py-0.5 text-[#92400E]">
+            Demo: secciones cartografiadas solo en Sonora
+          </span>
+        )}
+        {claveEntidadDatos === "26" && (
+          <span title="La demo solo incluye 10 municipios de Sonora; con la API real se cargan los 72">
+            Demo: 10 de 72 municipios de Sonora
+          </span>
+        )}
+      </p>
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row md:divide-x md:divide-linea">
         <div
@@ -263,10 +250,18 @@ export function MapaPage() {
               }
             />
           ) : (
-            <p className="p-4 text-[13px] text-ink-2">
-              La cartografía de secciones de la demo está disponible solo para Sonora. Este estado
-              se mostrará en el mapa nacional con su nivel de riesgo estimado.
-            </p>
+            <div className="flex h-full items-center justify-center bg-fondo p-6">
+              <div className="max-w-[380px] border border-linea bg-white p-5 text-center">
+                <h3 className="text-[14px] font-semibold text-ink">
+                  {entidades.data?.find((e) => e.clave === filtros.entidad)?.nombre ?? "Esta entidad"}
+                  : secciones aún sin cartografía en la demo
+                </h3>
+                <p className="mt-1.5 text-[12px] leading-relaxed text-ink-2">
+                  Esta entidad participa en el mapa nacional con su nivel de riesgo estimado. Con la
+                  API real del INE se cargan sus secciones aquí.
+                </p>
+              </div>
+            </div>
           )}
         </div>
 
@@ -274,14 +269,7 @@ export function MapaPage() {
           className="w-full space-y-3 overflow-auto bg-fondo p-3 md:w-[30%]"
           data-tour="panel"
         >
-          <Card
-            titulo="Resumen"
-            accion={
-              <span className="text-[10px] uppercase text-ink-2">
-                {esNacional ? "Entidades con datos" : "Estadística 2027"}
-              </span>
-            }
-          >
+          <Card titulo="Resumen">
             <div className="divide-y divide-linea-2 text-[13px]">
               {esNacional && resumenNacional ? (
                 <>
@@ -323,11 +311,6 @@ export function MapaPage() {
 
           <Card
             titulo={esNacional ? "Distribución por nivel (entidades)" : "Distribución por nivel"}
-            accion={
-              <span className="text-[10px] text-ink-2">
-                N={formatEntero(esNacional ? (resumenNacional?.entidades ?? 0) : visibles.length)}
-              </span>
-            }
             sinPadding
           >
             {esNacional && resumenNacional ? (
@@ -339,10 +322,7 @@ export function MapaPage() {
             )}
           </Card>
 
-          <Card
-            titulo="Leyenda de corte"
-            accion={<span className="text-[10px] uppercase text-ink-2">Umbrales</span>}
-          >
+          <Card titulo="Leyenda de corte">
             <Legend umbrales={umbrales} />
           </Card>
 
