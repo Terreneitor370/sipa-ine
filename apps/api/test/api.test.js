@@ -23,6 +23,8 @@ let base;
 let tokenAdmin;
 let tokenAnalista;
 
+const correoUnico = (prefijo = "usuario") => `${prefijo}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@prueba.local`;
+
 async function pedir(ruta, { metodo = "GET", token, cuerpo } = {}) {
   const r = await fetch(base + ruta, {
     method: metodo,
@@ -72,7 +74,53 @@ describe("autenticación", () => {
 
   test("usuarios solo para ADMIN", async () => {
     assert.equal((await pedir("/usuarios", { token: tokenAnalista })).estado, 403);
-    assert.equal((await pedir("/usuarios", { token: tokenAdmin })).datos.length, 2);
+    assert.ok((await pedir("/usuarios", { token: tokenAdmin })).datos.length >= 2);
+  });
+
+  test("ADMIN puede crear usuarios", async () => {
+    const email = correoUnico("analista");
+    const cuerpo = { nombre: "Nuevo Analista", email, password: "clave-prueba-2", rol: "ANALISTA" };
+    const creado = await pedir("/usuarios", { metodo: "POST", token: tokenAdmin, cuerpo });
+    assert.equal(creado.estado, 201);
+    assert.equal(creado.datos.email, email);
+    assert.equal(creado.datos.rol, "ANALISTA");
+
+    const login = await pedir("/auth/login", { metodo: "POST", cuerpo: { email, password: cuerpo.password } });
+    assert.equal(login.estado, 200);
+    assert.equal(login.datos.usuario.email, email);
+  });
+
+  test("ANALISTA no puede crear usuarios", async () => {
+    const r = await pedir("/usuarios", {
+      metodo: "POST",
+      token: tokenAnalista,
+      cuerpo: { nombre: "Sin permiso", email: correoUnico("sin-permiso"), password: "clave-prueba-3", rol: "ANALISTA" },
+    });
+    assert.equal(r.estado, 403);
+  });
+
+  test("no permite crear usuarios con correo repetido", async () => {
+    const email = correoUnico("duplicado");
+    const cuerpo = { nombre: "Usuario Base", email, password: "clave-prueba-4", rol: "ANALISTA" };
+    assert.equal((await pedir("/usuarios", { metodo: "POST", token: tokenAdmin, cuerpo })).estado, 201);
+    const duplicado = await pedir("/usuarios", {
+      metodo: "POST",
+      token: tokenAdmin,
+      cuerpo: { ...cuerpo, nombre: "Usuario Repetido", email: email.toUpperCase() },
+    });
+    assert.equal(duplicado.estado, 409);
+    assert.equal(duplicado.datos.error.code, "USER_ALREADY_EXISTS");
+  });
+
+  test("valida los campos de alta de usuario", async () => {
+    const r = await pedir("/usuarios", {
+      metodo: "POST",
+      token: tokenAdmin,
+      cuerpo: { nombre: "A", email: "correo-invalido", password: "123", rol: "INVALIDO" },
+    });
+    assert.equal(r.estado, 400);
+    assert.equal(r.datos.error.code, "VALIDATION_ERROR");
+    assert.equal(r.datos.error.details.length, 4);
   });
 });
 

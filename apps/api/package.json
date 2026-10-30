@@ -11,7 +11,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node --test \"test/**/*.test.js\""
+    "test": "node --test \"test/**/*.test.js\"",
+    "db:migrate": "node src/db-cli.js migrate",
+    "db:seed": "node src/db-cli.js seed",
+    "db:setup": "node src/db-cli.js setup"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -22,6 +25,7 @@
     "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.24.6",
     "topojson-server": "^3.0.1"
   }
 }

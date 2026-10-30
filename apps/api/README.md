@@ -49,9 +49,30 @@ credenciales nunca se suben al repositorio.
 ```
 cd apps/api
 npm install
+npm run db:setup   # opcional: crea esquema y carga semillas en MySQL
 npm start          # http://localhost:4000/api/v1
 npm test           # pruebas con datos de ejemplo (test/fixtures)
 ```
+
+## Migraciones y seeds MySQL
+
+El API sigue funcionando con datos en memoria para la demo, pero el esquema de base de datos
+de backend/DevOps ya queda versionado para despliegues.
+
+```
+cd apps/api
+npm run db:migrate
+npm run db:seed
+```
+
+- Migraciones: `db/migrations/*.sql`
+- Seeds: `db/seeds/*.sql`
+- Los usuarios (ADMIN y ANALISTA) no se siembran en SQL: se definen con las variables
+   `ADMIN_*` y `ANALISTA_*` de tu `.env` local. Nunca se versionan contrasenas.
+- Si `docker compose up` falla porque el puerto `3306` ya está ocupado, use
+   `MYSQL_HOST_PORT=3307` (o cualquier puerto libre) para publicar MySQL del contenedor.
+- Para evitar conflicto cuando tu BD local usa `MYSQL_USER=root`, usa `MYSQL_CONTAINER_USER`
+   y `MYSQL_CONTAINER_PASSWORD` para el contenedor de Docker (ver `.env.example`).
 
 Para que el frontend use el API real: en `apps/web/.env.local` poner
 `VITE_USE_MOCKS=false` y reiniciar `npm run dev`.
@@ -63,7 +84,7 @@ Todas bajo `/api/v1` y con `Authorization: Bearer <token>`, salvo `/health` y `/
 | Ruta | Descripción |
 |---|---|
 | `POST /auth/login` | Sesión JWT de 8 h; 5 intentos fallidos por 15 min |
-| `GET /auth/me`, `GET /usuarios` | Usuario actual; lista de usuarios (ADMIN) |
+| `GET /auth/me`, `GET /usuarios`, `POST /usuarios` | Usuario actual; lista y alta de usuarios (ADMIN) |
 | `GET /entidades`, `GET /entidades/{e}/municipios` | Catálogos |
 | `GET /riesgo?entidad=&municipio=&nivel=` | Pronóstico por sección |
 | `GET /riesgo/municipios?entidad=` | Agregado por municipio, ponderado por lista nominal |

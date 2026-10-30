@@ -2,7 +2,10 @@
 // bcrypt en memoria y JWT de 8 horas (ADR de autenticación, sección 7.5).
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ErrorApi } from "./errores.js";
+import { ErrorApi, validacion } from "./errores.js";
+
+const ROLES_VALIDOS = new Set(["ADMIN", "ANALISTA"]);
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class Autenticacion {
   constructor({ usuarios, jwt: cfg }) {
@@ -36,6 +39,44 @@ export class Autenticacion {
       expiresIn: `${this.cfg.expiraHoras}h`,
     });
     return { token, expiraEn, usuario: this.publico(u) };
+  }
+
+  crearUsuario(entrada) {
+    const detalles = [];
+    const nombre = String(entrada?.nombre ?? "").trim();
+    const email = String(entrada?.email ?? "").trim().toLowerCase();
+    const password = String(entrada?.password ?? "");
+    const rol = String(entrada?.rol ?? "").trim().toUpperCase();
+
+    if (nombre.length < 2 || nombre.length > 120) {
+      detalles.push({ campo: "nombre", mensaje: "Debe tener entre 2 y 120 caracteres" });
+    }
+    if (!RE_EMAIL.test(email) || email.length > 191) {
+      detalles.push({ campo: "email", mensaje: "Debe ser un correo válido" });
+    }
+    if (password.length < 8) {
+      detalles.push({ campo: "password", mensaje: "Debe tener al menos 8 caracteres" });
+    }
+    if (!ROLES_VALIDOS.has(rol)) {
+      detalles.push({ campo: "rol", mensaje: "Valores permitidos: ADMIN, ANALISTA" });
+    }
+    if (detalles.length) throw validacion("Parámetros inválidos", detalles);
+    if (this.usuarios.some((u) => u.email === email)) {
+      throw new ErrorApi(409, "USER_ALREADY_EXISTS", "El correo ya existe");
+    }
+
+    const siguienteId = this.usuarios.reduce((maximo, u) => Math.max(maximo, Number(u.id) || 0), 0) + 1;
+    const nuevo = {
+      id: siguienteId,
+      nombre,
+      email,
+      rol,
+      activo: true,
+      ultimoAcceso: null,
+      hash: bcrypt.hashSync(password, 10),
+    };
+    this.usuarios.push(nuevo);
+    return this.publico(nuevo);
   }
 
   /** Middleware: exige un Bearer válido y deja req.usuario. */

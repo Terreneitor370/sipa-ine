@@ -72,6 +72,11 @@ export function crearApp(config, { datos = new Datos(config.dirDatos) } = {}) {
 
   r.get("/usuarios", Autenticacion.rol("ADMIN"), (_req, res) => res.json(auth.usuarios.map((u) => auth.publico(u))));
 
+  r.post("/usuarios", Autenticacion.rol("ADMIN"), (req, res) => {
+    const creado = auth.crearUsuario(req.body ?? {});
+    res.status(201).json(creado);
+  });
+
   const entidadValida = (v) => {
     const e = entero(v, "entidad", { min: 1, max: 32 });
     if (!datos.existeEntidad(e)) throw noEncontrado(`No hay datos de la entidad ${e}`);
