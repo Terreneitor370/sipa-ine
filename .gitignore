@@ -10,6 +10,7 @@ dist/
 build/
 .vite/
 coverage/
+*.tsbuildinfo
 
 # Variables de entorno (solo se sube .env.example)
 .env

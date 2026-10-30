@@ -1,0 +1,38 @@
+{
+  "entidad": 26,
+  "seccion": 401,
+  "valorBase": 0.5,
+  "abstencionPred": 0.543,
+  "factores": [
+    {
+      "variable": "abst_lag_mismo_tipo",
+      "etiqueta": "Abstención intermedia previa",
+      "valor": null,
+      "contribucion": 0.042
+    },
+    {
+      "variable": "dist_mac_km",
+      "etiqueta": "Distancia a MAC más cercano",
+      "valor": 0.61,
+      "contribucion": 0.031
+    },
+    {
+      "variable": "ind_marginacion",
+      "etiqueta": "Índice de marginación (CONAPO)",
+      "valor": 0.61,
+      "contribucion": 0.023
+    },
+    {
+      "variable": "pct_viv_internet",
+      "etiqueta": "Viviendas con internet",
+      "valor": 0.61,
+      "contribucion": 0.014
+    },
+    {
+      "variable": "escolaridad_prom",
+      "etiqueta": "Escolaridad promedio",
+      "valor": 0.61,
+      "contribucion": -0.009
+    }
+  ]
+}

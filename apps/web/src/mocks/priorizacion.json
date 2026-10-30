@@ -1,0 +1,122 @@
+[
+  {
+    "entidad": 26,
+    "seccion": 418,
+    "municipio": 45,
+    "listaNominal": 9685,
+    "abstencionA": 0.4,
+    "abstencionB": 0.362,
+    "votosRecuperables": 677,
+    "nivelRiesgoA": "BAJO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 440,
+    "municipio": 45,
+    "listaNominal": 9079,
+    "abstencionA": 0.425,
+    "abstencionB": 0.405,
+    "votosRecuperables": 726,
+    "nivelRiesgoA": "BAJO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 443,
+    "municipio": 18,
+    "listaNominal": 9730,
+    "abstencionA": 0.558,
+    "abstencionB": 0.535,
+    "votosRecuperables": 389,
+    "nivelRiesgoA": "ALTO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 426,
+    "municipio": 29,
+    "listaNominal": 8328,
+    "abstencionA": 0.589,
+    "abstencionB": 0.543,
+    "votosRecuperables": 666,
+    "nivelRiesgoA": "MUY_ALTO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 444,
+    "municipio": 26,
+    "listaNominal": 7919,
+    "abstencionA": 0.58,
+    "abstencionB": 0.556,
+    "votosRecuperables": 395,
+    "nivelRiesgoA": "MUY_ALTO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 433,
+    "municipio": 26,
+    "listaNominal": 7116,
+    "abstencionA": 0.4,
+    "abstencionB": 0.347,
+    "votosRecuperables": 569,
+    "nivelRiesgoA": "BAJO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 419,
+    "municipio": 17,
+    "listaNominal": 7101,
+    "abstencionA": 0.4,
+    "abstencionB": 0.361,
+    "votosRecuperables": 568,
+    "nivelRiesgoA": "BAJO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 445,
+    "municipio": 30,
+    "listaNominal": 7443,
+    "abstencionA": 0.624,
+    "abstencionB": 0.599,
+    "votosRecuperables": 446,
+    "nivelRiesgoA": "MUY_ALTO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 441,
+    "municipio": 17,
+    "listaNominal": 8417,
+    "abstencionA": 0.487,
+    "abstencionB": 0.466,
+    "votosRecuperables": 168,
+    "nivelRiesgoA": "MEDIO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 408,
+    "municipio": 17,
+    "listaNominal": 7773,
+    "abstencionA": 0.567,
+    "abstencionB": 0.539,
+    "votosRecuperables": 310,
+    "nivelRiesgoA": "MUY_ALTO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 437,
+    "municipio": 29,
+    "listaNominal": 7472,
+    "abstencionA": 0.4,
+    "abstencionB": 0.343,
+    "votosRecuperables": 373,
+    "nivelRiesgoA": "BAJO"
+  },
+  {
+    "entidad": 26,
+    "seccion": 412,
+    "municipio": 30,
+    "listaNominal": 6474,
+    "abstencionA": 0.4,
+    "abstencionB": 0.368,
+    "votosRecuperables": 517,
+    "nivelRiesgoA": "BAJO"
+  }
+]

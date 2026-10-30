@@ -1,0 +1,11 @@
+# Responsable de cada parte del proyecto
+*                       @Terreneitor370
+/ml/                    @Terreneitor370
+/services/ml-service/   @Terreneitor370
+/apps/api/              @JeshuaGamer342
+/db/                    @JeshuaGamer342
+/.github/workflows/     @JeshuaGamer342
+/docker-compose.yml     @JeshuaGamer342
+/apps/web/              @Kassie009
+/public-geo/            @Kassie009
+/docs/openapi.yaml      @Terreneitor370 @JeshuaGamer342 @Kassie009
