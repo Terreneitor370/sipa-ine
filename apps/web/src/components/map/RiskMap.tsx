@@ -58,11 +58,18 @@ export function RiskMap({
   geo,
   riesgo,
   onSeleccion,
+  /**
+   * Si se pasa, solo las secciones que cumplen el predicado se pintan (con su
+   * nivel y un contorno vino) y el resto se atenúa. Sirve para mostrar las
+   * secciones focalizadas por la intervención (mapa del escenario B).
+   */
+  resaltadas,
   zoom = 8,
 }: {
   geo: FeatureCollectionGeo;
   riesgo?: RiesgoRespuesta;
   onSeleccion?: (seccionId: number) => void;
+  resaltadas?: (s: NonNullable<RiesgoRespuesta["secciones"]>[number]) => boolean;
   zoom?: number;
 }) {
   const porClave = new Map(riesgo?.secciones.map((s) => [s.claveSeccion, s]) ?? []);
@@ -85,11 +92,19 @@ export function RiskMap({
       <Coordenadas />
       <AjusteVista geo={geo} />
       <GeoJSON
+        key={riesgo ? "riesgo-listo" : "riesgo-pendiente"}
         data={geo as unknown as GeoJSON.FeatureCollection}
         style={(feature): PathOptions => {
           const clave = feature?.properties?.claveSeccion as string | undefined;
           const seccion = clave ? porClave.get(clave) : undefined;
-          return seccion ? estiloPoligono(seccion.nivel) : SIN_DATOS;
+          if (!seccion) return SIN_DATOS;
+          if (resaltadas) {
+            // Modo foco: solo las secciones que la intervención toca se pintan
+            return resaltadas(seccion)
+              ? { ...estiloPoligono(seccion.nivel), weight: 2.5, color: "#950054", fillOpacity: 0.85 }
+              : SIN_DATOS;
+          }
+          return estiloPoligono(seccion.nivel);
         }}
         onEachFeature={(feature, layer: Layer) => {
           const clave = feature?.properties?.claveSeccion as string | undefined;
@@ -108,6 +123,9 @@ export function RiskMap({
           const html =
             `<div style="font-size:11px;line-height:1.45">` +
             `<b>&#9632; SECCIÓN: ${escapar(seccion.claveSeccion)} (${escapar(seccion.municipio)})</b><br/>` +
+            (resaltadas
+              ? `<b>Focalizada por la intervención</b><br/>`
+              : "") +
             `Lista nominal: ${seccion.listaNominal.toLocaleString("es-MX")} electores<br/>` +
             `Abstención proyectada: ${(seccion.abstencionPredicha * 100).toFixed(1)}%<br/>` +
             `Intervalo P10–P90: ${(seccion.p10 * 100).toFixed(1)}% – ${(seccion.p90 * 100).toFixed(1)}%<br/>` +

@@ -11,6 +11,20 @@ import { ETIQUETA_NIVEL, NIVELES } from "../lib/riesgo";
 import { nombreEntidad } from "../lib/adaptadores";
 import type { FilaPriorizacion } from "../types/api";
 
+/** Para descargar CSV con acentos correctos en Excel y cabeceras legibles. */
+function descargarCsv(nombre: string, filas: string[][]) {
+  const csv =
+    "\uFEFF" + filas.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = nombre;
+  enlace.click();
+  URL.revokeObjectURL(url);
+}
+
+type CampoOrden = "claveSeccion" | "abstencionA" | "abstencionB" | "deltaPp" | "votosRecuperables";
+
 function abstencionB(f: FilaPriorizacion): number {
   return f.abstencionA + f.deltaPp / 100;
 }
@@ -22,47 +36,59 @@ export function PriorizacionPage() {
   const { data, isLoading } = usePriorizacion(ESCENARIO_ID);
   const [nivel, setNivel] = useState("");
   const [municipio, setMunicipio] = useState("");
+  const [top, setTop] = useState("50");
+  const [orden, setOrden] = useState<{ campo: CampoOrden; dir: "asc" | "desc" }>({
+    campo: "votosRecuperables",
+    dir: "desc",
+  });
 
   const filas = useMemo(() => {
-    return (data?.filas ?? [])
+    const valor = (f: FilaPriorizacion, campo: CampoOrden): number | string => {
+      if (campo === "claveSeccion") return f.claveSeccion;
+      if (campo === "abstencionB") return abstencionB(f);
+      return f[campo];
+    };
+    const ordenadas = (data?.filas ?? [])
       .filter(
         (f) =>
           (nivel === "" || f.nivel === nivel) &&
           (municipio === "" || f.municipio.toLowerCase().includes(municipio.toLowerCase())),
       )
-      .sort((a, b) => b.votosRecuperables - a.votosRecuperables);
-  }, [data, nivel, municipio]);
+      .sort((a, b) => {
+        const va = valor(a, orden.campo);
+        const vb = valor(b, orden.campo);
+        const cmp = typeof va === "number" && typeof vb === "number" ? va - vb : String(va).localeCompare(String(vb), "es-MX");
+        return orden.dir === "asc" ? cmp : -cmp;
+      });
+    const n = top === "" ? ordenadas.length : Number(top);
+    return ordenadas.slice(0, n);
+  }, [data, nivel, municipio, top, orden]);
 
   const totalRecuperables = filas.reduce((acc, f) => acc + f.votosRecuperables, 0);
 
   const exportarCsv = () => {
-    const encabezado = [
-      "seccion",
-      "municipio",
-      "lista_nominal",
-      "nivel",
-      "abstencion_a",
-      "abstencion_b",
-      "delta_pp",
-      "votos_recuperables",
-    ];
-    const cuerpo = filas.map((f) => [
-      f.claveSeccion,
-      f.municipio,
-      f.listaNominal,
-      f.nivel,
-      (f.abstencionA * 100).toFixed(2),
-      (abstencionB(f) * 100).toFixed(2),
-      f.deltaPp.toFixed(2),
-      f.votosRecuperables,
+    descargarCsv(`priorizacion-escenario-${ESCENARIO_ID}.csv`, [
+      ["Sección (clave INE)", "Municipio", "Lista nominal (electores)", "Nivel sin intervención"],
+      ["Abstención A (%)", "Abstención B (%)", "Δ PP (puntos porcentuales)", "Votos recuperables"],
+      ...filas.map((f) => [
+        f.claveSeccion,
+        f.municipio,
+        formatEntero(f.listaNominal),
+        ETIQUETA_NIVEL[f.nivel],
+        (f.abstencionA * 100).toFixed(1),
+        (abstencionB(f) * 100).toFixed(1),
+        f.deltaPp.toFixed(1),
+        formatEntero(f.votosRecuperables),
+      ]),
     ]);
-    const csv = [encabezado, ...cuerpo].map((f) => f.join(",")).join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const enlace = document.createElement("a");
-    enlace.href = url;
-    enlace.download = `priorizacion-${ESCENARIO_ID}.csv`;
-    enlace.click();
-    URL.revokeObjectURL(url);
+  };
+
+  const alternarOrden = (campo: CampoOrden) => {
+    setOrden((o) =>
+      o.campo === campo
+        ? { campo, dir: o.dir === "asc" ? "desc" : "asc" }
+        : { campo, dir: campo === "claveSeccion" ? "asc" : "desc" },
+    );
   };
 
   /** Entidades presentes en el ranking (multientidad cuando el backend sirva todo México). */
@@ -94,6 +120,19 @@ export function PriorizacionPage() {
           sinPadding
         >
           <div className="flex flex-wrap items-end gap-3 border-b border-linea-2 bg-white px-3 py-2">
+            <div className="w-40">
+              <Select
+                etiqueta="Top de secciones"
+                value={top}
+                onChange={(e) => setTop(e.target.value)}
+                opciones={[
+                  { valor: "20", texto: "Top 20" },
+                  { valor: "50", texto: "Top 50" },
+                  { valor: "100", texto: "Top 100" },
+                  { valor: "", texto: "Todas" },
+                ]}
+              />
+            </div>
             <div className="w-44">
               <Select
                 etiqueta="Nivel A"
@@ -140,14 +179,39 @@ export function PriorizacionPage() {
                 <thead>
                   <tr className="bg-tabla text-left text-[10px] uppercase tracking-wide text-ink-2">
                     <th className="px-3 py-2 font-semibold">#</th>
-                    <th className="px-3 py-2 font-semibold">Sección</th>
+                    {/* Sección (ordenable) */}
+                    <th className="px-3 py-2" aria-sort={orden.campo === "claveSeccion" ? (orden.dir === "asc" ? "ascending" : "descending") : undefined}>
+                      <button type="button" onClick={() => alternarOrden("claveSeccion")} title="Ordenar por sección" className={`inline-flex items-center gap-1 uppercase tracking-wide hover:text-ink ${orden.campo === "claveSeccion" ? "text-ink" : ""}`}>
+                        Sección <span aria-hidden="true" className="text-[9px]">{orden.campo === "claveSeccion" ? (orden.dir === "asc" ? "▲" : "▼") : "⇅"}</span>
+                      </button>
+                    </th>
                     <th className="px-3 py-2 font-semibold">Municipio</th>
                     <th className="px-3 py-2 text-right font-semibold">Lista nominal</th>
                     <th className="px-3 py-2 font-semibold">Nivel A</th>
-                    <th className="px-3 py-2 text-right font-semibold">Abstención A</th>
-                    <th className="px-3 py-2 text-right font-semibold">Abstención B</th>
-                    <th className="px-3 py-2 text-right font-semibold">Δ PP</th>
-                    <th className="px-3 py-2 text-right font-semibold">Votos recuperables</th>
+                    {/* Abstención A (ordenable) */}
+                    <th className="px-3 py-2 text-right" aria-sort={orden.campo === "abstencionA" ? (orden.dir === "asc" ? "ascending" : "descending") : undefined}>
+                      <button type="button" onClick={() => alternarOrden("abstencionA")} title="Ordenar por abstención A" className={`inline-flex items-center gap-1 uppercase tracking-wide hover:text-ink ${orden.campo === "abstencionA" ? "text-ink" : ""}`}>
+                        Abstención A <span aria-hidden="true" className="text-[9px]">{orden.campo === "abstencionA" ? (orden.dir === "asc" ? "▲" : "▼") : "⇅"}</span>
+                      </button>
+                    </th>
+                    {/* Abstención B (ordenable) */}
+                    <th className="px-3 py-2 text-right" aria-sort={orden.campo === "abstencionB" ? (orden.dir === "asc" ? "ascending" : "descending") : undefined}>
+                      <button type="button" onClick={() => alternarOrden("abstencionB")} title="Ordenar por abstención B" className={`inline-flex items-center gap-1 uppercase tracking-wide hover:text-ink ${orden.campo === "abstencionB" ? "text-ink" : ""}`}>
+                        Abstención B <span aria-hidden="true" className="text-[9px]">{orden.campo === "abstencionB" ? (orden.dir === "asc" ? "▲" : "▼") : "⇅"}</span>
+                      </button>
+                    </th>
+                    {/* Δ PP (ordenable) */}
+                    <th className="px-3 py-2 text-right" aria-sort={orden.campo === "deltaPp" ? (orden.dir === "asc" ? "ascending" : "descending") : undefined}>
+                      <button type="button" onClick={() => alternarOrden("deltaPp")} title="Ordenar por Δ PP" className={`inline-flex items-center gap-1 uppercase tracking-wide hover:text-ink ${orden.campo === "deltaPp" ? "text-ink" : ""}`}>
+                        Δ PP <span aria-hidden="true" className="text-[9px]">{orden.campo === "deltaPp" ? (orden.dir === "asc" ? "▲" : "▼") : "⇅"}</span>
+                      </button>
+                    </th>
+                    {/* Votos recuperables (ordenable) */}
+                    <th className="px-3 py-2 text-right" aria-sort={orden.campo === "votosRecuperables" ? (orden.dir === "asc" ? "ascending" : "descending") : undefined}>
+                      <button type="button" onClick={() => alternarOrden("votosRecuperables")} title="Ordenar por votos recuperables" className={`inline-flex items-center gap-1 uppercase tracking-wide hover:text-ink ${orden.campo === "votosRecuperables" ? "text-ink font-semibold" : "font-semibold"}`}>
+                        Votos recuperables <span aria-hidden="true" className="text-[9px]">{orden.campo === "votosRecuperables" ? (orden.dir === "asc" ? "▲" : "▼") : "⇅"}</span>
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -192,9 +256,12 @@ export function PriorizacionPage() {
           )}
         </Card>
 
-        <p className="mt-3 text-[11px] text-ink-2">
-          Corte de niveles: umbrales fijos por versión de modelo (ADR-05), no cuantiles del
-          escenario. Orden por votos recuperables estimados.
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-2">
+          <span>Estratificación: corte por umbrales fijos del modelo (ADR-05)</span>
+          <span>·</span>
+          <span>Cálculo con el Padrón y Lista Nominal vigentes</span>
+          <span>·</span>
+          <span className="font-medium text-ink">Total visualizado: {formatEntero(totalRecuperables)} votos recuperables</span>
         </p>
       </div>
     </div>
