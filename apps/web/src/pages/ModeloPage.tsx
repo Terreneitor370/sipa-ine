@@ -1,6 +1,5 @@
 import { Card } from "../components/ui/Card";
 import { EncabezadoPagina } from "../components/ui/EncabezadoPagina";
-import { Disclaimer } from "../components/ui/Disclaimer";
 import { GainImportanceChart } from "../components/charts/GainImportanceChart";
 import { useModelo } from "../hooks/useSipa";
 
@@ -17,8 +16,6 @@ export function ModeloPage() {
         migas={["SIPA-INE", "Modelo"]}
         titulo="Especificación y validación del modelo"
         descripcion="Qué tan confiable es la predicción y de dónde salen los números: métricas, variables y limitaciones."
-        badge={`v${data.version} · PRODUCCIÓN`}
-        accion={<span className="text-[10px] text-ink-2">{data.algoritmo}</span>}
       />
 
       <div className="flex-1 space-y-3 overflow-auto bg-fondo p-3">
@@ -72,8 +69,6 @@ export function ModeloPage() {
             </ul>
           </Card>
         </div>
-
-        <Disclaimer />
       </div>
     </div>
   );

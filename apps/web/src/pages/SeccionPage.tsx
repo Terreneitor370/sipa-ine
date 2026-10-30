@@ -24,53 +24,54 @@ export function SeccionPage() {
   const nivel = nivelDesdeAbstencion(data.predicciones.media);
   const colonias = coloniasDeSeccion(data.claveSeccion);
 
-  // Exporta la ficha completa a CSV (los datos, no una captura de pantalla)
-  const exportarFicha = () => {
-    const f = data.factoresTop;
-    const filas = [
-      ["campo", "valor"],
-      ["seccion", data.claveSeccion],
-      ["municipio", data.municipio],
-      ["entidad", data.entidad],
-      ["distrito_federal", data.distrito],
-      ["modelo_version", data.modeloVersion],
-      ["abstencion_predicha_pct", (data.predicciones.media * 100).toFixed(1)],
-      ["p10_pct", (data.predicciones.p10 * 100).toFixed(1)],
-      ["p90_pct", (data.predicciones.p90 * 100).toFixed(1)],
-      ["amplitud_pp", data.predicciones.amplitudPp],
-      ["lista_nominal", data.indicadores.listaNominal],
-      ["dist_mac_km", data.indicadores.distMacKm],
-      ["marginacion", data.indicadores.marginacion],
-      ["pct_internet", data.indicadores.pctInternet],
-      ["factor_variable", f.map((x) => x.variable).join(" | ")],
-      ["factor_contribucion_pp", f.map((x) => (x.contribucion * 100).toFixed(2)).join(" | ")],
-    ];
-    const csv = filas.map((r) => r.join(",")).join("\n");
+  /** Utilidad: genera y descarga un CSV con BOM (para que Excel respete acentos),
+   * separado por comas y con cabeceras en español. */
+  const descargarCsv = (nombre: string, filas: string[][]) => {
+    const csv =
+      "\uFEFF" + filas.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const enlace = document.createElement("a");
     enlace.href = url;
-    enlace.download = `ficha-seccion-${data.claveSeccion}.csv`;
+    enlace.download = nombre;
     enlace.click();
     URL.revokeObjectURL(url);
   };
 
+  // Exporta la ficha completa a CSV (los datos, no una captura de pantalla)
+  const exportarFicha = () => {
+    const f = data.factoresTop;
+    const campo = (v: string, u: string) => `${v} (${u})`;
+    const filas: string[][] = [
+      ["Sección (clave INE)", data.claveSeccion],
+      ["Distrito electoral federal", String(data.distrito)],
+      ["Municipio", data.municipio],
+      ["Entidad federativa", data.entidad],
+      ["Versión del modelo", data.modeloVersion],
+      [campo("Abstención predicha 2027", "% de lista nominal"), (data.predicciones.media * 100).toFixed(1)],
+      [campo("Abstención límite inferior (P10)", "%"), (data.predicciones.p10 * 100).toFixed(1)],
+      [campo("Abstención límite superior (P90)", "%"), (data.predicciones.p90 * 100).toFixed(1)],
+      [campo("Amplitud de la predicción", "puntos porcentuales"), String(data.predicciones.amplitudPp)],
+      [campo("Lista nominal", "electores"), formatEntero(data.indicadores.listaNominal)],
+      [campo("Distancia al módulo de atención (MAC) más cercano", "km"), String(data.indicadores.distMacKm)],
+      ["Nivel de marginación", data.indicadores.marginacion],
+      [campo("Viviendas con internet", "%"), String(data.indicadores.pctInternet)],
+      ["Factores principales del modelo (SHAP)", f.map((x) => x.descripcion).join(" | ")],
+      [campo("Contribución de cada factor", "puntos porcentuales"), f.map((x) => (x.contribucion * 100).toFixed(2)).join(" | ")],
+    ];
+    descargarCsv(`ficha-seccion-${data.claveSeccion}.csv`, filas);
+  };
+
   // Exporta solo los factores SHAP (aporte de cada variable a la predicción)
   const exportarShap = () => {
-    const filas = [
-      ["variable", "descripcion", "contribucion_pp"],
+    const filas: string[][] = [
+      ["Factor del modelo (qué es)", "Variable técnica", "Contribución (puntos porcentuales)"],
       ...data.factoresTop.map((f) => [
+        f.descripcion,
         f.variable,
-        f.descripcion.replace(/,/g, " "),
         (f.contribucion * 100).toFixed(2),
       ]),
     ];
-    const csv = filas.map((f) => f.join(",")).join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const enlace = document.createElement("a");
-    enlace.href = url;
-    enlace.download = `shap-seccion-${data.claveSeccion}.csv`;
-    enlace.click();
-    URL.revokeObjectURL(url);
+    descargarCsv(`factores-seccion-${data.claveSeccion}.csv`, filas);
   };
 
   return (
@@ -80,8 +81,13 @@ export function SeccionPage() {
         titulo={`Sección ${data.claveSeccion} · ${data.municipio}, ${data.entidad}`}
         badge={`DF ${data.distrito} · SECC ${data.claveSeccion}`}
         accion={
-          <span className="text-[10px] text-ink-2">
-            Cómputos INE 2018-2024 · Censo 2020 · Datos agregados
+          <span className="flex items-center gap-3">
+            <Link to="/" className="text-[11px] text-acento hover:underline">
+              &larr; Volver al mapa
+            </Link>
+            <span className="text-[10px] text-ink-2">
+              Datos agregados · corte ene 2025
+            </span>
           </span>
         }
       />
